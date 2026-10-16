@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" id="themeColor" content="#fff9ef">
+<script>
+/* Výchozí téma podle zařízení, přepnutí uživatele má přednost. Před CSS kvůli bliknutí. */
+(function () {
+  'use strict';
+  var preferred = 'light';
+  try { preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (_) {}
+  try {
+    var choice = window.localStorage.getItem('dvojkova-aritmetika-theme');
+    if (choice === 'dark' || choice === 'light') preferred = choice;
+  } catch (_) { /* Nedostupné úložiště není překážkou. */ }
+  document.documentElement.dataset.theme = preferred;
+  document.documentElement.style.colorScheme = preferred;
+})();
+</script>
+<meta name="description" content="Offline výukový trenažér dvojkové aritmetiky: sčítání, přenosy a odčítání pomocí druhého doplňku.">
+<title>Dvojková aritmetika – procvičování</title>
+<style>
+:root {
+  color-scheme:light;
+  --paper:#fff9ef;--paper-dark:#f7efdf;--card:#fffdf8;--ink:#372a23;--soft-ink:#695b50;
+  --muted:#87796d;--line:#e7d7c5;--strong-line:#d8c0a5;--orange:#ed7449;--burnt:#a94c28;
+  --orange-pale:#fff0e4;--amber:#e5a733;--yellow:#fff3c5;--sage:#547f59;--green-pale:#e8f3e4;
+  --red:#bc4e49;--red-pale:#fff0ed;--blue:#49779c;--shadow:0 9px 26px rgba(103,71,42,.065);
+  font-family:Inter,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-width:0;color:var(--ink);background-color:var(--paper);background-image:linear-gradient(to right,rgba(197,154,99,.085) 1px,transparent 1px),linear-gradient(to bottom,rgba(197,154,99,.085) 1px,transparent 1px);background-size:28px 28px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.47}input,select{min-width:0}input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #d89037;outline-offset:3px}[hidden]{display:none!important}.mono,code,.bit,.binary-line,.double-result,.worksheet{font-family:ui-monospace,'Cascadia Code',Consolas,'Liberation Mono',monospace;font-variant-numeric:tabular-nums}.app{max-width:1460px;margin:auto;padding:25px clamp(14px,2.6vw,37px) 55px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:23px}.brand{display:flex;align-items:center;gap:15px}.brand-mark{width:59px;height:59px;display:grid;place-items:center;background:#fff0d6;border:2px solid #f5c695;border-radius:17px;box-shadow:inset 0 -5px 0 #ffdfae;font:900 1.15rem ui-monospace,monospace;color:#a34b2c;flex-shrink:0}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-weight:900;color:var(--burnt);font-size:.70rem;margin:0 0 5px}h1{margin:0;font-size:clamp(1.6rem,3.4vw,2.35rem);line-height:1.2;letter-spacing:-.045em}.subheading{margin:7px 0 0;font-size:.91rem;line-height:1.5;color:var(--soft-ink)}.hero-stamp{display:flex;gap:8px;align-items:center;border:1px solid #e4cdb2;border-radius:999px;background:#fff8ec;padding:8px 13px;color:#996c43;font-size:.78rem;font-weight:800;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.setup{padding:19px 20px 18px;margin-bottom:16px}.section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--burnt);margin:0 0 11px}.setup-grid{display:grid;grid-template-columns:minmax(310px,1.5fr) minmax(185px,1fr) auto;align-items:end;gap:20px}.field label{display:block;color:var(--soft-ink);font-weight:850;font-size:.8rem;margin:0 0 8px}.field select,.field input{display:block;width:100%;background:#fffaf1;border:1px solid #d9c4aa;color:var(--ink);height:45px;border-radius:10px;padding:0 12px;font-size:.91rem}.mode-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px;gap:3px;background:#f5ebdc;border:1px solid #ebdac5;border-radius:12px}.mode-switch button{background:transparent;border:none;border-radius:9px;min-height:43px;padding:8px 7px;font-size:.86rem;font-weight:850;color:#74685d;white-space:nowrap}.mode-switch button[aria-pressed=true]{background:#fffdfa;box-shadow:0 2px 9px rgba(101,70,40,.12);color:var(--burnt)}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;border-radius:10px;padding:9px 15px;border:1px solid transparent;font-weight:850;font-size:.86rem;text-decoration:none;line-height:1.2;transition:background-color .12s,border-color .12s}.btn.primary{background:var(--orange);color:#fff;border-color:#d76542}.btn.primary:hover{background:#d9613b}.btn.ochre{background:#ffc85d;color:#553c18;border-color:#e6b353}.btn.ochre:hover{background:#ffd67f}.btn.green{background:#679768;color:white}.btn.secondary{background:#fff6e8;color:#765944;border-color:#dec9ae}.btn.secondary:hover{background:#fff0d4}.btn.plain{background:transparent;color:#876952;border-color:var(--line)}.btn.small{font-size:.78rem;min-height:36px;padding:7px 10px}.btn.wide{min-width:155px}.inline-note{margin:12px 0 0;font-size:.79rem;color:var(--muted);line-height:1.5}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:19px}.metric{padding:12px 17px;border-radius:13px;background:rgba(255,253,247,.93);border:1px solid var(--line);display:flex;flex-direction:column;gap:3px}.metric .number{font-size:1.75rem;font-weight:900;line-height:1.1;letter-spacing:-.035em}.metric small{font-size:.76rem;color:var(--soft-ink);font-weight:700}.metric:nth-child(2) .number{color:var(--sage)}.metric:nth-child(3) .number{color:var(--burnt)}.metric:nth-child(4) .number{color:#a26a1f}
+.page-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,340px);gap:19px;align-items:start}.main-area,.side-area{min-width:0}.side-area{display:grid;gap:15px}.problem{padding:21px 23px;margin-bottom:15px;background:linear-gradient(111deg,#fffdf8 0%,#fff3e5 100%)}.problem-head{display:flex;justify-content:space-between;gap:13px;align-items:start;flex-wrap:wrap}.minor-overline{font-size:.71rem;font-weight:900;color:var(--burnt);letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px}.problem h2{font-size:clamp(1.45rem,3vw,2.0rem);margin:0 0 7px;letter-spacing:-.04em}.problem small{color:var(--soft-ink);line-height:1.5;font-size:.79rem}.pill{border-radius:999px;background:#fff6dc;color:#9a6118;border:1px solid #f5d8a7;padding:7px 10px;font-size:.75rem;font-weight:850}.problem .binary-pair{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline;width:max-content;max-width:100%;margin-top:15px;padding:11px 16px;background:#fffdf7;border-radius:11px;border:1px dashed #e6cdb1;font-weight:850;font-size:clamp(1.13rem,2.3vw,1.50rem);letter-spacing:.06em}.binary-pair .operation{color:var(--burnt);font-size:1.04rem}.binary-pair .operand{white-space:pre}.emphasis-line{margin-top:6px;color:var(--muted);font-size:.79rem}.progress{padding:14px 18px;margin-bottom:15px}.progress-header{display:flex;gap:10px;justify-content:space-between;align-items:baseline;margin-bottom:11px}.progress h3{font-size:.93rem;margin:0}.progress small{color:var(--muted);font-size:.73rem}.steps{display:flex;flex-wrap:wrap;gap:7px}.step-chip{font-size:.75rem;font-weight:850;padding:7px 9px;border-radius:999px;background:#f5eadb;color:#847060;border:1px solid #ead9c4}.step-chip.done{color:#416c43;border-color:#bfd7b7;background:#eaf5e6}.step-chip.now{color:#9d4c29;border-color:#f3b18d;background:#ffeddf;box-shadow:inset 0 0 0 1px #f7bb9f}.step-chip.future{opacity:.68}
+.exercise{padding:23px}.exercise-top{display:flex;align-items:start;justify-content:space-between;gap:12px}.exercise h2{font-size:1.35rem;margin:0 0 9px;letter-spacing:-.02em}.exercise p.description{margin:0 0 18px;font-size:.88rem;line-height:1.55;color:var(--soft-ink)}.step-counter{display:inline-flex;background:#fff0dc;color:#ab5c27;border-radius:100px;padding:7px 11px;font-size:.72rem;font-weight:900;white-space:nowrap}.input-grid{display:grid;gap:13px;margin-bottom:18px}.binary-field{display:grid;gap:6px}.binary-field label{font-size:.80rem;color:var(--soft-ink);font-weight:850}.binary-field input{max-width:480px;width:100%;height:49px;background:#fffcf5;border:1px solid #ccb89e;border-radius:10px;padding:9px 14px;color:#42362e;font-weight:850;font-size:1.2rem;letter-spacing:.15em}.binary-field input::placeholder{color:#cbbbae}.binary-field input[aria-invalid=true]{border-color:var(--red);background:#fff5f1}.compact-rule{border:1px solid #ecddc8;border-radius:11px;background:#fff8ed;padding:11px 14px;line-height:1.55;font-size:.82rem;color:#765f47;margin-bottom:14px}.compact-rule strong{color:#a65a2e}.flow-display{display:flex;align-items:stretch;gap:9px;flex-wrap:wrap;margin:0 0 14px}.flow-part{padding:11px 13px;background:#fff6e7;border:1px solid #ebd6b9;border-radius:10px;min-width:118px}.flow-part .flow-label{font-weight:850;font-size:.73rem;color:#876545}.flow-part code{font-size:1.02rem;font-weight:800;display:block;padding-top:5px}.flow-arrow{align-self:center;font-size:1.2rem;color:#c99454}.process-line{padding:13px 14px;background:#fffaf0;border:1px solid #e8dac8;border-radius:11px;margin-bottom:13px}.process-line code{display:block;white-space:pre;overflow-x:auto;max-width:100%;line-height:1.45;font-size:clamp(.98rem,2vw,1.18rem);font-weight:850}.process-line .subtle{display:block;font-size:.76rem;color:var(--muted);margin-top:6px}
+.work-scroll{max-width:100%;overflow-x:auto;padding:8px 2px 15px;scrollbar-color:#ceb79a #fff6e8}.calc-board{--digit:48px;--label:95px;display:grid;grid-template-columns:var(--label) repeat(var(--count),var(--digit));width:max-content;min-width:max-content;align-items:center;margin:0 auto 7px;background:#fffaf0;border:1px solid #ebdbc8;border-radius:13px;padding:13px 15px 15px}.calc-board .row-label{padding-right:10px;text-align:right;color:#8c7157;font-size:.76rem;font-weight:850}.calc-board .sum-label{color:var(--burnt);font-size:1.4rem}.calc-board .board-cell{height:44px;display:flex;align-items:center;justify-content:center;font-size:1.14rem;font-weight:850;text-align:center}.calc-board .board-cell.info{color:#3f342c}.calc-board .board-cell.msb{color:#ae6c32}.calc-board .board-cell.carry-cell{height:60px;display:flex;flex-direction:column;justify-content:end;gap:2px}.carry-small{font-size:.64rem;color:#96661d}.board-input{width:44px;height:44px;text-align:center;font-size:1.12rem;font-weight:900;color:#915313;background:#fff5d3;border:1px solid #d6af68;border-radius:8px;padding:0}.board-input:focus-visible{outline-offset:0}.board-input.sum-bit{background:#f0f7e9;color:#356b3d;border-color:#9abc99}.board-input.bad{border-color:var(--red);background:#ffe7e0}.board-rule{grid-column:2 / -1;height:3px;border-radius:99px;background:#c5946a;margin:3px 3px 6px}.initial-carry{font-size:.91rem;color:#99836a}.final-carry{background:#ffefd2;border-radius:7px}.carry-caption{font-size:.71rem;line-height:1.4;color:#826d5a;text-align:center;margin-bottom:14px}.board-prefix{color:var(--burnt);font-size:.75rem;font-weight:900;text-align:center}.user-actions{display:flex;flex-wrap:wrap;gap:9px;margin:17px 0 0}.feedback{min-height:0;margin-top:14px;padding:12px 14px;line-height:1.55;font-size:.87rem;border:1px solid;border-radius:10px}.feedback.neutral{background:#fff5dc;border-color:#ead19c;color:#765a23}.feedback.bad{background:var(--red-pale);border-color:#eebeba;color:#993f39}.feedback.good{background:var(--green-pale);border-color:#bcd6b6;color:#3e6d43}.feedback .feedback-title{font-weight:900;display:block;margin-bottom:2px}.hint-shell{margin-top:16px;border-top:1px dashed #e6d0b7;padding-top:14px}.hint-header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}.hint-status{font-size:.75rem;font-weight:850;color:#9a764c}.hint-content{margin-top:12px;padding:13px 15px;background:#fff4d8;border:1px solid #f0d79f;border-radius:10px;color:#745126;font-size:.85rem;line-height:1.55}.hint-content p{margin:0}.hint-content strong{display:block;margin:0 0 5px}.solution-panel{border:1px solid #edc995;background:#fffaf0;padding:15px;margin-top:12px;border-radius:12px}.solution-panel h3{font-size:.9rem;margin:0 0 7px}.solution-progress{font-size:.75rem;color:#946536}.solution-explanation{line-height:1.65;margin:12px 0;padding:13px;background:#fff1d4;border-radius:8px;font-size:.86rem}.solution-steps{margin:10px 0 0;padding-left:20px;line-height:1.6;color:#6c594a;font-size:.83rem}.solution-steps li+li{margin-top:6px}.solution-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.finished{padding:22px;border-radius:14px;background:#f0f7e9;border:1px solid #b7d3b2}.finished h2{margin:0 0 9px;color:#406c47;font-size:1.35rem}.double-result{display:inline-block;border-bottom:5px double #579060;padding:5px 3px 6px;font-size:clamp(1.55rem,4vw,2.2rem);font-weight:900;letter-spacing:.085em}.finished .decimal{font-size:1.1rem;color:#416746;font-weight:800;margin-left:9px}.finished .fin-note{line-height:1.6;color:#5a7357;font-size:.86rem;margin:13px 0}.finished .fin-extra{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.side-card{padding:18px}.side-card h2{font-size:1.07rem;margin:0 0 12px;letter-spacing:-.02em}.rule-list{display:grid;gap:8px}.rule-line{padding:9px 11px;background:#fff6e7;border-radius:8px;border:1px solid #efdec8;font-size:.82rem;color:#705b4d}.rule-line strong{color:#99562a}.rule-line code{font-size:.92rem;font-weight:900;letter-spacing:.03em}.example{border:1px solid #e8d6c0;border-radius:11px;margin:9px 0;background:#fffbf4;overflow:hidden}.example summary{list-style:none;cursor:pointer;padding:12px;font-size:.84rem;font-weight:850;color:#664834}.example summary::-webkit-details-marker{display:none}.example summary::after{content:'＋';float:right;color:#bc7642}.example[open] summary::after{content:'−'}.example[open] summary{border-bottom:1px solid #ebd8c0;background:#fff5e7}.example-body{padding:12px 14px;font-size:.8rem;line-height:1.6;color:#6d594a}.example-body p{margin:7px 0}.example-body pre{font-family:ui-monospace,Consolas,monospace;margin:10px 0;padding:11px;background:#fff2db;border:1px solid #e9d4b5;border-radius:7px;white-space:pre;overflow-x:auto;line-height:1.5;color:#573b24;font-size:.94rem}.example-body .double-result{font-size:1rem;border-bottom-width:4px;color:#4a7651}.history-list{display:grid;gap:8px}.history-row{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;padding:9px;background:#fff8eb;border:1px solid #edddca;border-radius:9px}.history-row code{font-size:.83rem;color:#483a2d;font-weight:800}.history-row small{display:block;color:#87725b;font-size:.70rem;margin-top:4px}.empty{margin:0;color:#918276;font-size:.82rem;line-height:1.55}.side-note{font-size:.75rem;color:#8a725c;line-height:1.5}
+.review{margin-top:17px;padding:18px 21px;border:1px solid #c8ddbd;background:#f1f8eb;border-radius:14px}.review h2{margin:0 0 7px;font-size:1.13rem;color:#3c713e}.review p{font-size:.86rem;line-height:1.55;color:#52734d;margin:0 0 13px}.review .btn{margin:0 7px 5px 0}
+.print-card{margin-top:19px;padding:21px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:15px;align-items:start}.print-card h2{margin:0 0 6px;font-size:1.12rem}.print-card p{color:var(--soft-ink);font-size:.83rem;line-height:1.5;margin:0 0 10px}.print-tools{display:flex;align-items:end;flex-wrap:wrap;gap:8px}.print-tools .field{width:120px}.print-status{font-size:.78rem;color:var(--sage);margin-top:8px}.print-preview{grid-column:1/-1;border-top:1px dashed #e0cdb5;padding-top:12px}.print-preview summary{cursor:pointer;font-weight:850;color:#8c5931;font-size:.84rem}.worksheet-list{font-size:.81rem;line-height:1.9;color:#5f4e42;columns:2;column-gap:22px;margin-top:12px}.sheet-item{break-inside:avoid}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px;color:#907c68;font-size:.76rem;line-height:1.5}.footer strong{color:#9e6a44}.toast{position:fixed;bottom:15px;right:15px;max-width:min(380px,calc(100vw - 30px));background:#fff8e8;color:#75533c;border:1px solid #e9c99d;box-shadow:0 8px 24px #8b62432e;border-radius:10px;padding:12px 16px;z-index:30;font-size:.85rem}
+#print-root{display:none}.print-page{break-after:page}.print-page:last-child{break-after:auto}
+@media(min-width:1050px){.side-area{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto;scrollbar-width:thin;padding-bottom:5px}}
+@media(max-width:1050px){.page-grid{grid-template-columns:minmax(0,1fr)}.side-area{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.side-area .history-card{grid-column:1/-1}.setup-grid{grid-template-columns:minmax(0,1.5fr) minmax(160px,1fr) auto;gap:12px}}
+@media(max-width:720px){.app{padding:16px 12px 35px}.hero{grid-template-columns:1fr;gap:9px}.hero-stamp{justify-self:start}.brand-mark{width:49px;height:49px}.setup-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.setup-grid .modes-field{grid-column:1/-1}.setup-grid .new-button{width:100%}.metrics{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:10px 13px}.metric .number{font-size:1.48rem}.problem,.exercise{padding:17px}.side-area{grid-template-columns:1fr}.side-area .history-card{grid-column:auto}.print-card{grid-template-columns:1fr}.print-tools{justify-content:flex-start}.calc-board{--digit:48px;--label:88px}.calc-board .board-input{width:44px;height:44px}.calc-board .board-cell{height:48px}.calc-board .board-cell.carry-cell{height:64px}}
+@media(max-width:360px){.mode-switch button{font-size:.78rem;padding:7px 2px}.problem .binary-pair{font-size:1.06rem}.calc-board{--digit:48px;--label:82px;padding:9px 12px}.calc-board .board-input{width:44px;height:44px}.exercise h2{font-size:1.18rem}}
+@media(hover:hover){.step-chip.now{transition:box-shadow .1s}.btn:hover:not(:disabled){filter:brightness(.97)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+/* Tisk je černobílý a nezávislý na aktivním světlém / tmavém motivu. */
+@page { size: A4 portrait; margin: 12mm 14mm; }
+@media print {
+  html, body, html[data-theme="dark"], html[data-theme="dark"] body {
+    margin:0!important;padding:0!important; background:#fff!important;color:#151515!important;
+    font: 10pt Arial, Helvetica, sans-serif!important; color-scheme:light!important;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  body>.app, body>.toast { display:none!important; }
+  #print-root { display:block!important; width:100%!important; position:static!important;
+    padding:0!important; margin:0!important; color:#151515!important;background:#fff!important; }
+  .print-page { box-sizing:border-box; width:100%; height:268mm;
+    display:flex;flex-direction:column; margin:0!important;padding:0!important;
+    page-break-after:always;break-after:page;overflow:hidden; }
+  .print-page:last-child {page-break-after:auto;break-after:auto;}
+  .sheet-head {display:block; border-bottom:1.5pt solid #222;
+    padding:0 0 2mm;margin:0 0 3mm; }
+  .sheet-head-title{flex:1;min-width:0}
+  .sheet-head h2 {font:700 15pt Arial,sans-serif;margin:0;color:#181818;line-height:1.2}
+  .sheet-head p {font:9pt Arial,sans-serif;margin:2mm 0 0;color:#333;line-height:1.2}
+  .sheet-identification {width:auto;text-align:left;line-height:1.3!important;white-space:nowrap;margin-top:2mm!important;}
+  .sheet-directions {margin:0 0 3mm;padding:2mm 2.5mm;background:#f4f4f4!important;
+    border:1px solid #bbb;font:8.5pt/1.4 Arial,sans-serif;color:#222!important;}
+  .sheet-entries {flex:1;display:flex;flex-direction:column;gap:2mm;min-height:0;}
+  .sheet-entry {box-sizing:border-box;break-inside:avoid;page-break-inside:avoid;
+    border:1px solid #bdbdbd;border-radius:2mm;padding:3mm 4mm 2mm;
+    flex:1;display:flex;flex-direction:column;gap:2mm;min-height:0;}
+  .sheet-entry h3.prompt {margin:0;font:700 12pt ui-monospace,Consolas,monospace;color:#111;}
+  .paper-columns {display:grid;grid-template-columns:1fr 1fr;gap:2mm 5mm;}
+  .paper-row {display:flex;gap:2mm;align-items:baseline;min-width:0;font:9.2pt Arial,sans-serif;white-space:nowrap;}
+  .paper-label{flex-shrink:0;}
+  .paper-fill {display:inline-block;align-self:end;flex:1;min-width:16mm;
+    border-bottom:1px dotted #777;height:5.2mm;}
+  .paper-answer {font:700 10pt ui-monospace,Consolas,monospace;white-space:nowrap;color:#171717;}
+  .paper-working {display:flex;flex-direction:column;flex:1;min-height:0;}
+  .paper-section-label {font:700 8pt Arial,sans-serif;color:#555;display:block;margin-bottom:1mm;}
+  .paper-lines {display:grid;grid-template-columns:1fr 1fr;gap:0 6mm;}
+  .paper-work-line {display:flex;align-items:end;gap:2mm;height:7.5mm;font:8.6pt ui-monospace,Consolas,monospace;}
+  .paper-work-label {min-width:17mm;flex-shrink:0;color:#444;}
+  .paper-work-blank {border-bottom:1px dotted #aaa;flex:1;min-width:0;height:4.2mm;}
+  .paper-carry-question {font:8.5pt Arial,sans-serif;line-height:1.35;color:#111;}
+  .paper-negative-fields .paper-row {font-size:8.5pt;}
+  .paper-results {padding-top:1mm;border-top:1px solid #ddd;}
+  .paper-results .paper-fill {border-bottom:3px double #555;}
+  .teacher .sheet-entries {gap:2.5mm;}
+  .teacher-entry {gap:1.7mm;}
+  .teacher-working {display:grid;grid-template-columns:65mm 1fr;align-items:center;gap:4mm;min-height:0;flex:1;}
+  .paper-code {font:10.2pt/1.2 ui-monospace,Consolas,monospace;white-space:pre;
+    margin:0;padding:0;color:#111;background:none;border:0;}
+  .teacher-explain {font:8.7pt/1.45 Arial,sans-serif;color:#222;overflow-wrap:anywhere;}
+  .teacher-explain>div + div {margin-top:1.5mm;}
+  .print-answer {font:10.2pt Arial,sans-serif;margin-top:auto;padding-top:1mm;}
+  .print-double-result {display:inline-block;border-bottom:3pt double #111;padding:0 1mm 1mm;
+    font:700 11pt ui-monospace,Consolas,monospace;}
+  .sheet-footer {margin-top:3mm;border-top:1px solid #aaa;padding-top:2mm;
+    color:#333;font:8pt Arial,sans-serif;}
+}
+.decision-field{border:1px solid #e4cba9;border-radius:12px;background:#fff7e8;padding:13px 16px;margin:9px 0 17px;display:flex;gap:14px;flex-wrap:wrap}.decision-field legend{font-size:.87rem;font-weight:850;color:#6e5236;padding:0 6px}.decision-option{display:inline-flex;align-items:center;gap:8px;border:1px solid #ddc59f;border-radius:9px;padding:11px 17px;background:#fffdfa;font-weight:850;color:#6c4a2d;min-height:43px;cursor:pointer}.decision-option:has(input:checked){border-color:#c47c42;background:#ffedcf;color:#9b4b24}.decision-option input{accent-color:#b35f30;width:18px;height:18px}
+
+.final-walk{border:1px solid #c4d7b9;background:#f9fff4;border-radius:10px;margin:13px 0;padding:12px 15px}.final-walk summary{cursor:pointer;font-size:.84rem;font-weight:850;color:#456e47}.review-step{border-top:1px dashed #c9d8c1;padding:11px 0 3px}.review-step:first-child{margin-top:10px}.review-step h3{margin:0;font-size:.85rem;color:#456c43}.review-step ol{margin:8px 0;padding-left:20px;font-size:.81rem;line-height:1.65;color:#567456}.review-step li+li{margin-top:4px}
+
+/* 3.1: volba barevného režimu v záhlaví, bez závislosti na síti. */
+.hero-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:43px;
+  padding:8px 14px;border:1px solid var(--strong-line);border-radius:999px;
+  background:var(--card);color:var(--ink);font-size:.83rem;font-weight:850;white-space:nowrap;
+  box-shadow:var(--shadow);transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{border-color:var(--orange);background:var(--orange-pale)}
+.theme-toggle #themeIcon{font-size:1.1rem;color:var(--burnt)}
+@media(max-width:720px){.hero-tools{justify-content:flex-start}}
+
+/* Tmavé téma má vlastní čitelné povrchy i texty všech školních stavů. */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#191b22;--paper-dark:#242630;--card:#252831;--ink:#f6eee4;
+  --soft-ink:#dbccba;--muted:#bdad9a;--line:#48464a;--strong-line:#716158;
+  --orange:#dc754f;--burnt:#ffb28d;--orange-pale:#403026;--amber:#edb44d;
+  --yellow:#443722;--sage:#aad4a2;--green-pale:#263b32;
+  --red:#f19b91;--red-pale:#422b30;--blue:#9ec5e4;
+  --shadow:0 12px 30px rgba(0,0,0,.22);
+}
+html[data-theme="dark"] body{
+  background-color:var(--paper);
+  background-image:linear-gradient(to right,rgba(218,184,141,.065) 1px,transparent 1px),linear-gradient(to bottom,rgba(218,184,141,.065) 1px,transparent 1px);
+}
+html[data-theme="dark"] .brand-mark{background:#493527;border-color:#926744;box-shadow:inset 0 -4px 0 #60442e;color:#ffd49b}
+html[data-theme="dark"] .hero-stamp{background:#2e2d31;border-color:#594b3d;color:#e2bd91}
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .binary-field input{background:#20252d;color:var(--ink);border-color:#736256}
+html[data-theme="dark"] .binary-field input::placeholder{color:#aa9b8b}
+html[data-theme="dark"] .binary-field input[aria-invalid=true]{background:#462d30;border-color:var(--red)}
+html[data-theme="dark"] .mode-switch{background:#1c2027;border-color:#4f4742}
+html[data-theme="dark"] .mode-switch button{color:#d4c6b8}
+html[data-theme="dark"] .mode-switch button[aria-pressed="true"]{background:#42372f;color:#ffd0a2;box-shadow:inset 0 0 0 1px #87664a}
+html[data-theme="dark"] .btn.primary{background:#d96b49;border-color:#ef906a;color:#fff}
+html[data-theme="dark"] .btn.primary:hover{background:#bd5538}
+html[data-theme="dark"] .btn.secondary{background:#453526;color:#ffe1b5;border-color:#806244}
+html[data-theme="dark"] .btn.secondary:hover{background:#59412d}
+html[data-theme="dark"] .btn.ochre{background:#d69b36;border-color:#d6a350;color:#271a0e}
+html[data-theme="dark"] .btn.ochre:hover{background:#ecc06a}
+html[data-theme="dark"] .btn.green{background:#436f50;color:#f1fff3}
+html[data-theme="dark"] .btn.plain{color:#ecd0b3}
+html[data-theme="dark"] .metric{background:#252831}
+html[data-theme="dark"] .metric:nth-child(2) .number{color:#b0dca5}
+html[data-theme="dark"] .metric:nth-child(3) .number{color:#ffb28d}
+html[data-theme="dark"] .metric:nth-child(4) .number{color:#ffd18c}
+html[data-theme="dark"] .problem{background:linear-gradient(112deg,#252831,#352a26)}
+html[data-theme="dark"] .pill{background:#3c3024;color:#ffd29a;border-color:#6a4e32}
+html[data-theme="dark"] .problem .binary-pair{background:#222830;border-color:#68513c}
+html[data-theme="dark"] .step-chip{background:#343038;color:#cbbcae;border-color:#544a47}
+html[data-theme="dark"] .step-chip.done{background:#2a4133;color:#b5e7ad;border-color:#506d51}
+html[data-theme="dark"] .step-chip.now{background:#4a3327;color:#ffcca4;border-color:#bb7955;box-shadow:inset 0 0 0 1px #80503e}
+html[data-theme="dark"] .step-counter{background:#433125;color:#ffd0a4}
+html[data-theme="dark"] .compact-rule,
+html[data-theme="dark"] .flow-part,
+html[data-theme="dark"] .process-line,
+html[data-theme="dark"] .calc-board{background:#2a2b30;border-color:#5e5148;color:var(--ink)}
+html[data-theme="dark"] .compact-rule{color:#e7d6c3}
+html[data-theme="dark"] .compact-rule strong{color:#ffb38a}
+html[data-theme="dark"] .flow-part .flow-label,
+html[data-theme="dark"] .calc-board .row-label{color:#d1b49b}
+html[data-theme="dark"] .flow-arrow,
+html[data-theme="dark"] .calc-board .sum-label{color:#ffb28d}
+html[data-theme="dark"] .calc-board .board-cell.info{color:#f1e9dd}
+html[data-theme="dark"] .calc-board .board-cell.msb{color:#ffcc9c}
+html[data-theme="dark"] .board-input{background:#403421;color:#ffe0a8;border-color:#ad8a49}
+html[data-theme="dark"] .board-input.sum-bit{background:#2d4235;color:#c1efbf;border-color:#719d76}
+html[data-theme="dark"] .board-input.bad{background:#533134;border-color:#e69a8d}
+html[data-theme="dark"] .board-rule{background:#b38a67}
+html[data-theme="dark"] .carry-small{color:#ebc686}
+html[data-theme="dark"] .initial-carry,
+html[data-theme="dark"] .carry-caption{color:#d6c4b0}
+html[data-theme="dark"] .final-carry{background:#463626}
+html[data-theme="dark"] .board-prefix{color:#ffbe91}
+html[data-theme="dark"] .work-scroll{scrollbar-color:#645342 #292831}
+html[data-theme="dark"] .feedback.neutral{background:#393226;border-color:#756143;color:#ffdeb0}
+html[data-theme="dark"] .feedback.bad{background:#452e32;border-color:#9f5b5b;color:#ffd1ca}
+html[data-theme="dark"] .feedback.good{background:#293e33;border-color:#5e8964;color:#c1e8c4}
+html[data-theme="dark"] .hint-shell{border-color:#5d4b3d}
+html[data-theme="dark"] .hint-status{color:#dfbd92}
+html[data-theme="dark"] .hint-content,
+html[data-theme="dark"] .solution-explanation{background:#443725;border-color:#80633a;color:#ffdfac}
+html[data-theme="dark"] .solution-panel{background:#2f2b27;border-color:#92734f}
+html[data-theme="dark"] .solution-progress{color:#f1bc77}
+html[data-theme="dark"] .solution-steps{color:#dac7b5}
+html[data-theme="dark"] .finished,
+html[data-theme="dark"] .review{background:#26372f;border-color:#5c8263}
+html[data-theme="dark"] .finished h2,
+html[data-theme="dark"] .review h2{color:#b4e6b0}
+html[data-theme="dark"] .finished .decimal,
+html[data-theme="dark"] .finished .fin-note,
+html[data-theme="dark"] .review p{color:#c5e0c4}
+html[data-theme="dark"] .double-result{border-bottom-color:#8bc58e}
+html[data-theme="dark"] .rule-line,
+html[data-theme="dark"] .example,
+html[data-theme="dark"] .history-row{background:#2d2a2b;border-color:#5a4b41;color:#e4d4c6}
+html[data-theme="dark"] .rule-line strong{color:#ffc395}
+html[data-theme="dark"] .example summary{color:#f0d7bf}
+html[data-theme="dark"] .example[open] summary{background:#3b312b;border-color:#574738}
+html[data-theme="dark"] .example-body{color:#e2d3c6}
+html[data-theme="dark"] .example-body pre{background:#26282d;border-color:#645143;color:#fae7d0}
+html[data-theme="dark"] .example-body .double-result{color:#b2dfb0}
+html[data-theme="dark"] .history-row code{color:#f1e4d9}
+html[data-theme="dark"] .history-row small,
+html[data-theme="dark"] .empty,
+html[data-theme="dark"] .side-note{color:#cabbab}
+html[data-theme="dark"] .print-preview{border-color:#5b4b3c}
+html[data-theme="dark"] .print-preview summary,
+html[data-theme="dark"] .footer strong{color:#ffba8e}
+html[data-theme="dark"] .worksheet-list,
+html[data-theme="dark"] .footer{color:#c6b6a7}
+html[data-theme="dark"] .toast{background:#3a332e;color:#ffe2c3;border-color:#95704c;box-shadow:0 8px 28px #0007}
+html[data-theme="dark"] .decision-field{background:#302c2c;border-color:#675440}
+html[data-theme="dark"] .decision-field legend{color:#ebd5b7}
+html[data-theme="dark"] .decision-option{background:#272b31;border-color:#6f5844;color:#ead9c7}
+html[data-theme="dark"] .decision-option:has(input:checked){background:#4a3426;border-color:#c18b54;color:#ffdab0}
+html[data-theme="dark"] .decision-option input{accent-color:#df9a65}
+html[data-theme="dark"] .final-walk{background:#29352c;border-color:#56745c}
+html[data-theme="dark"] .final-walk summary,
+html[data-theme="dark"] .review-step h3{color:#bce5ba}
+html[data-theme="dark"] .review-step{border-color:#536a58}
+html[data-theme="dark"] .review-step ol{color:#d1e4cd}
+html[data-theme="dark"] input:focus-visible,
+html[data-theme="dark"] select:focus-visible,
+html[data-theme="dark"] button:focus-visible,
+html[data-theme="dark"] summary:focus-visible{outline-color:#f9bf72}
+@media print{
+  html[data-theme="dark"],html[data-theme="dark"] body{color-scheme:light!important;background:#fff!important;color:#161616!important}
+  html[data-theme="dark"] #print-root{color:#161616!important;background:#fff!important}
+}
+
+/* 3.2: vedené zadávání bit → přenos → další bit. Fokus zůstává viditelný i po skoku pomocí JS. */
+.calc-board .board-input:focus {
+  outline: 3px solid var(--orange);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(237,116,73,.14);
+}
+html[data-theme="dark"] .calc-board .board-input:focus {
+  outline-color: #ffbd86;
+  box-shadow: 0 0 0 4px rgba(255,189,134,.15);
+}
+
+/* 3.4 — volitelné jednoduché úlohy, výchozí stav je zaškrtnutý. */
+.worksheet-option{
+  display:flex;align-items:center;gap:10px;min-height:47px;padding:8px 12px;
+  background:var(--orange-pale);border:1px solid var(--strong-line);
+  border-radius:11px;color:var(--ink);cursor:pointer;max-width:290px;
+}
+.worksheet-option input{width:19px;height:19px;accent-color:var(--orange);flex-shrink:0;margin:0}
+.worksheet-option span{display:flex;flex-direction:column;gap:2px;font-size:.79rem;line-height:1.3}
+.worksheet-option small{color:var(--soft-ink);font-size:.70rem;font-weight:500}
+.print-card p.print-explanation{
+  background:var(--yellow);border-left:3px solid var(--amber);
+  padding:9px 12px;margin:8px 0 0;border-radius:0 9px 9px 0;
+  color:var(--ink);font-size:.79rem;line-height:1.55;
+}
+html[data-theme="dark"] .worksheet-option{background:#3b3028;border-color:#82664a;color:var(--ink)}
+html[data-theme="dark"] .worksheet-option small{color:var(--soft-ink)}
+html[data-theme="dark"] .print-card p.print-explanation{background:#3e3325;border-color:#dbad52;color:#f3dfc7}
+@media(max-width:720px){.worksheet-option{max-width:none;width:100%}}
+
+/* Tisková verze 3.4: písemné sčítání v JEDNOM sloupci. Žádná pole pro C₁…Cₙ.
+   Samostatně se vyhodnocuje pouze krajní přenos Cₙ. */
+@media print {
+  .paper-workspace{display:flex;align-items:flex-start;gap:7mm;min-height:23mm;flex:1;}
+  .paper-vertical{display:flex;flex-direction:column;gap:0;flex:0 0 67mm;min-width:0;}
+  .paper-calc-row{display:flex;align-items:end;gap:2mm;height:7.2mm;min-width:0;
+    font:9pt ui-monospace,Consolas,monospace;color:#242424;}
+  .paper-calc-symbol{width:18mm;flex:0 0 18mm;white-space:nowrap;}
+  .paper-calc-write{height:5.6mm;border-bottom:1px dotted #aaa;flex:1;min-width:0;}
+  .paper-calc-row:nth-child(2){border-bottom:1px solid #444;}
+  .paper-calc-answer .paper-calc-write{border-bottom:1px dotted #888;}
+  .paper-free-space{flex:1;align-self:stretch;min-width:0;}
+  .paper-carry-question{margin-top:0.5mm;font:8.5pt/1.35 Arial,sans-serif;}
+  .teacher-working{display:grid;grid-template-columns:63mm minmax(0,1fr);align-items:start;
+    gap:4mm;min-height:0;flex:1;}
+  .teacher-working .paper-workspace{min-height:0;}
+  .teacher-working .paper-code{font:10.2pt/1.22 ui-monospace,Consolas,monospace;
+    margin:0;padding:0;color:#111;white-space:pre;}
+}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="hero">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">01<br>10</div>
+      <div>
+        <p class="eyebrow">Digitální školní sešit · informatika</p>
+        <h1>Dvojková aritmetika – procvičování</h1>
+        <p class="subheading">Sčítání s přenosy, odčítání přes 2. doplněk a porozumění každému kroku.</p>
+      </div>
+    </div>
+    <div class="hero-tools">
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Zapnout tmavý režim">
+        <span id="themeIcon" aria-hidden="true">☾</span><span id="themeLabel">Tmavý režim</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="card setup" aria-label="Nastavení procvičování">
+    <p class="section-label">Připrav si příklad</p>
+    <div class="setup-grid">
+      <div class="field modes-field">
+        <label>Co chceš procvičit?</label>
+        <div class="mode-switch" id="modeSwitch" role="group" aria-label="Druh příkladů">
+          <button type="button" data-mode="add" aria-pressed="false">＋ Sčítání</button>
+          <button type="button" data-mode="sub" aria-pressed="true">− Odčítání</button>
+          <button type="button" data-mode="mixed" aria-pressed="false">⇄ Smíšené</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="difficulty">Obtížnost · počet bitů</label>
+        <select id="difficulty">
+          <option value="easy">Lehká · nejvýše 4 bity</option>
+          <option value="medium" selected>Střední · nejvýše 5 bitů</option>
+          <option value="hard">Těžká · nejvýše 8 bitů</option>
+        </select>
+      </div>
+      <button class="btn primary wide new-button" type="button" id="newTask">✦ Nový příklad</button>
+    </div>
+    <p class="inline-note">Při odčítání používáme dva <strong>nezáporné operandy</strong> a kladný menšitel. Při výpočtu použijeme jen tolik bitů, kolik má delší operand (nejvýše podle obtížnosti). Znaménko výsledku určujeme přenosem mimo tuto pracovní šířku — přesně podle postupu z hodiny.</p>
+  </section>
+
+  <section class="metrics" aria-label="Statistiky procvičování">
+    <div class="metric"><span class="number" id="statSolved">0</span><small>Vyřešené příklady</small></div>
+    <div class="metric"><span class="number" id="statCorrect">0</span><small>Bez chyby a odkrytí řešení</small></div>
+    <div class="metric"><span class="number" id="statAccuracy">—</span><small>Úspěšnost</small></div>
+    <div class="metric"><span class="number" id="statHints">0</span><small>Použité nápovědy</small></div>
+  </section>
+
+  <div class="page-grid">
+    <main class="main-area">
+      <section class="card problem" aria-label="Aktuální příklad">
+        <div class="problem-head">
+          <div>
+            <p class="minor-overline" id="problemTag">Procvičování · 5 bitů</p>
+            <h2 id="problemTitle">Načítání příkladu…</h2>
+            <small id="problemSubtitle">Připrav si nejprve vlastní výpočet.</small>
+          </div>
+          <span class="pill" id="problemPill">Odčítání</span>
+        </div>
+        <div class="binary-pair mono" id="problemPair" aria-label="Binární operandy"></div>
+        <p class="emphasis-line" id="problemCaption">Bity zarovnávej zprava; při odčítání nejprve vytvoř 2. doplněk.</p>
+      </section>
+
+      <section class="card progress" aria-label="Postup výpočtu">
+        <div class="progress-header"><h3>Tvůj postup</h3><small id="progressCount">Krok 1</small></div>
+        <div class="steps" id="stepper"></div>
+      </section>
+
+      <section class="card exercise" id="exerciseCard" aria-labelledby="stepTitle">
+        <div class="exercise-top">
+          <div><p class="minor-overline" id="stageOverline">Krok 1 · postupuj samostatně</p><h2 id="stepTitle">Zarovnání</h2></div>
+          <span class="step-counter" id="stageCounter">1 / 6</span>
+        </div>
+        <p class="description" id="stageDescription"></p>
+        <div id="stepFields"></div>
+        <div class="user-actions" id="stepActions">
+          <button class="btn primary" type="button" id="checkStep">✓ Zkontrolovat</button>
+          <button class="btn secondary" type="button" id="showProcedure">↗ Zobrazit postup</button>
+        </div>
+        <div id="stepFeedback" role="status" aria-live="polite"></div>
+        <div class="hint-shell" id="hintShell">
+          <div class="hint-header">
+            <button class="btn ochre" type="button" id="hintButton">☼ Potřebuji nápovědu</button>
+            <span class="hint-status" id="hintStatus">3 úrovně · řešení až po pokusu</span>
+          </div>
+          <div id="hintContent" aria-live="polite"></div>
+        </div>
+        <div id="walkthrough" aria-live="polite"></div>
+      </section>
+
+      <section class="finished" id="finished" hidden aria-live="polite">
+        <h2>✓ Příklad dokončen</h2>
+        <div><span class="double-result" id="finishedBinary"></span><span class="decimal" id="finishedDecimal"></span></div>
+        <p class="fin-note" id="finishedNote"></p>
+        <details class="final-walk" id="finalWalkDetails"><summary>Prohlédnout celý postup řešení</summary><div id="finalWalk"></div></details>
+        <div class="fin-extra">
+          <button type="button" class="btn green" id="nextAfterFinish">Další příklad →</button>
+          <button type="button" class="btn secondary" id="retryThisTask">↻ Zkusit znovu</button>
+        </div>
+      </section>
+      <section class="review" id="review" hidden aria-live="polite">
+        <h2 id="reviewTitle">Vyhodnocení série</h2>
+        <p id="reviewText"></p>
+        <button type="button" class="btn green" id="weakPractice">Procvičit slabá místa</button>
+        <button type="button" class="btn secondary" id="closeReview">Zavřít vyhodnocení</button>
+      </section>
+    </main>
+
+    <aside class="side-area" aria-label="Pravidla a další pomůcky">
+      <section class="card side-card">
+        <h2>✎ Tahák z hodiny</h2>
+        <div class="rule-list">
+          <div class="rule-line"><strong>Sčítání:</strong> <code>0+0=0</code> · <code>0+1=1</code> · <code>1+0=1</code></div>
+          <div class="rule-line"><strong>Přenos:</strong> <code>1+1=10₂</code> · <code>1+1+1=11₂</code></div>
+          <div class="rule-line"><strong>Odčítání:</strong> <code>A−B=A+(−B)</code></div>
+          <div class="rule-line"><strong>2. doplněk:</strong> každý bit invertuj a přičti <code>1</code></div>
+          <div class="rule-line"><strong>Po odčítání:</strong> přenos = nezáporný výsledek, bez přenosu = záporný</div>
+        </div>
+        <p class="side-note">Pravidlo znaménka podle přenosu platí zde pro odčítání nezáporných čísel s <strong>B &gt; 0</strong>. Nejde o obecné pravidlo signed overflowu.</p>
+      </section>
+
+      <section class="card side-card" id="examplesSection">
+        <h2>Vysvětlené příklady</h2>
+        <details class="example" id="exampleNegative">
+          <summary>A · Záporný výsledek: 13 − 16</summary>
+          <div class="example-body">
+            <p>Nejprve doplníme nuly zleva na <strong>5 bitů</strong>:</p>
+            <pre>13 = 01101
+16 = 10000</pre>
+            <p>Negace a přičtení jedničky:</p>
+            <pre>  10000
+→ 01111  (~B)
++     1
+-------
+  10000  (−B)</pre>
+            <p>Teď můžeme místo odčítání sčítat:</p>
+            <pre>  01101
++ 10000
+-------
+  11101</pre>
+            <p><strong>Nevznikl přenos</strong> mimo pět bitů. Tento <code>11101</code> je pouze záporný mezivýsledek ve 2. doplňku.</p>
+            <pre>  11101
+→ 00010
++     1
+-------
+  00011</pre>
+            <p>Čitelný výsledek: <span class="double-result">−00011₂</span> <strong>= −3₁₀</strong></p>
+          </div>
+        </details>
+        <details class="example" id="examplePositive">
+          <summary>B · Kladný výsledek: 13 − 9</summary>
+          <div class="example-body">
+            <p>Oba operandy zarovnáme na čtyři bity (bez doplňování nul):</p>
+            <pre>13 = 1101
+ 9 = 1001</pre>
+            <p>Vytvoření druhého doplňku devítky:</p>
+            <pre>  1001
+→ 0110  (~B)
++     1
+-------
+  0111  (−B)</pre>
+            <p>Sečteme a zapíšeme i přenos mimo šířku:</p>
+            <pre>   1101
+ + 0111
+ --------
+   10100</pre>
+            <p><strong>Vznikl přenos</strong> mimo 4 bity, takže ho zahodíme. Zbývá <code>0100</code>.</p>
+            <p>Čitelný výsledek: <span class="double-result">0100₂</span> <strong>= 4₁₀</strong></p>
+          </div>
+        </details>
+        <div class="user-actions"><button type="button" class="btn small secondary" id="loadExampleNegative">Procvičit 13 − 16</button><button type="button" class="btn small secondary" id="loadExamplePositive">Procvičit 13 − 9</button></div>
+      </section>
+
+      <section class="card side-card history-card">
+        <h2>↻ Posledních 10 výpočtů</h2>
+        <div id="historyList" class="history-list"><p class="empty">Zatím žádné dokončené výpočty.</p></div>
+        <div class="user-actions"><button type="button" class="btn small secondary" id="retryWrong" hidden>↻ Opakovat chybné příklady</button></div>
+        <p class="side-note">Výsledky a průběh se ukládají pouze do lokálního úložiště tohoto prohlížeče.</p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="card print-card" aria-labelledby="worksheetTitle">
+    <div>
+      <p class="section-label">Pro vyučovací hodinu</p>
+      <h2 id="worksheetTitle">Cvičení pro žáky a řešení pro učitele</h2>
+      <p>Zadání jsou v desítkové soustavě. Cvičení poskytuje prostor pro převod, písemný výpočet pod sebou a zpětnou interpretaci v desítkové soustavě. Učitelský klíč obsahuje tutéž sadu.</p>
+      <p class="print-explanation" role="note"><strong>Pozor:</strong> Toto je generátor <strong>cvičení</strong>, nikoli písemného testu. Případný test bude obsahovat pouze samotná zadání bez předtištěných polí, linek a nápověd.</p>
+      <div class="print-status" id="worksheetStatus" role="status">Zatím nejsou připravena cvičení pro žáky.</div>
+    </div>
+    <div class="print-tools">
+      <div class="field"><label for="worksheetCount">Počet úloh</label><select id="worksheetCount"><option value="5">5 příkladů</option><option value="10" selected>10 příkladů</option><option value="15">15 příkladů</option><option value="20">20 příkladů</option></select></div>
+      <label class="worksheet-option" for="worksheetTrivial" title="Povolí jednoduché příklady, např. 24 − 24, 0 − 1 nebo 0 + 7.">
+        <input type="checkbox" id="worksheetTrivial" checked>
+        <span><strong>Zahrnout triviální příklady</strong><small>Např. 24 − 24, 0 − 1, 0 + 7</small></span>
+      </label>
+      <button type="button" class="btn secondary" id="generateWorksheet">↻ Generovat cvičení</button>
+      <button type="button" class="btn primary" id="printWorksheet">⎙ Tisk cvičení pro žáky</button>
+      <button type="button" class="btn green" id="printSolutions">⎙ Tisk řešení</button>
+    </div>
+    <details class="print-preview" id="worksheetPreview"><summary>Zobrazit připravená cvičení pro žáky</summary><div class="worksheet-list mono" id="worksheetPreviewBody"><p class="empty">Nejprve vygeneruj cvičení.</p></div></details>
+  </section>
+  <footer class="footer"><span><strong>Dvojková aritmetika</strong> · procvičování · verze 3.6</span><span>Výpočet krok za krokem · cvičení k tisku</span></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div id="print-root" aria-hidden="true"></div>
+<script>
+/* Dvojková aritmetika, výpočetní jádro bez závislostí na DOM. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.BinaryCore = api;
+})(typeof globalThis === 'object' ? globalThis : this, function () {
+  'use strict';
+  const widths = Object.freeze({easy:4, medium:5, hard:8});
+  const bitCount=n=>`${n} ${n===1?'bit':n<=4?'bity':'bitů'}`;
+  const names = Object.freeze({easy:'Lehká · nejvýše 4 bity',medium:'Střední · nejvýše 5 bitů',hard:'Těžká · nejvýše 8 bitů'});
+  function requireWidth(n) { if (![4,5,8].includes(n)) throw new RangeError('Povoleno 4, 5 nebo 8 bitů.'); }
+  function isInt(n) { return Number.isSafeInteger(n); }
+  // `n` v zadání zůstává maximem obtížnosti (4/5/8); skutečný počet
+  // pracovních bitů volíme podle delšího z přirozených zápisů operandů.
+  function requireWord(n,v) {
+    if(!isInt(n)||n<1||n>8||!isInt(v)||v<0||v>=2**n)throw new RangeError('Neplatné číslo nebo šířka pracovního slova.');
+  }
+  function workWidth(t) {
+    requireTask(t);
+    return Math.max(t.a.toString(2).length,t.b.toString(2).length);
+  }
+  function requireOperand(n,v) { requireWidth(n); if (!isInt(v) || v < 0 || v >= (1 << n)) throw new RangeError('Operand je mimo rozsah.'); }
+  function bits(v,n) { requireWord(n,v); return v.toString(2).padStart(n,'0'); }
+  function raw(v) { if (!isInt(v) || v<0 || v>255) throw new RangeError('Neplatná hodnota.'); return v.toString(2); }
+  function inverse(s) { if (!/^[01]+$/.test(s)) throw new RangeError('Neplatný binární zápis.'); return [...s].map(x=>x==='1'?'0':'1').join(''); }
+  function complement(value,n) { requireWord(n,value); return (((1<<n)-value)%(1<<n)); }
+  function requireTask(t) {
+    if (!t || !['add','sub'].includes(t.op)) throw new RangeError('Neplatná operace.');
+    requireOperand(t.n,t.a); requireOperand(t.n,t.b);
+    if (t.op==='sub' && t.b===0) throw new RangeError('Menšitel musí být kladný.');
+    return t;
+  }
+  function columnTrace(x,y,n) {
+    requireWord(n,x);requireWord(n,y);
+    let carry=0, result=0;
+    const columns=[];
+    for (let i=0;i<n;i++) {
+      const a=(x>>i)&1, b=(y>>i)&1, incoming=carry;
+      const sum=a+b+incoming;
+      carry=sum>=2?1:0;
+      const bit=sum&1;
+      result|=bit<<i;
+      columns.push({index:i,a,b,in:incoming,total:sum,bit,out:carry});
+    }
+    return {columns, low:result, carry, full:carry*(1<<n)+result};
+  }
+  function solve(t) {
+    requireTask(t);
+    const {a,b,op}=t, n=workWidth(t);
+    const paddedA=bits(a,n), paddedB=bits(b,n), negatedB=inverse(paddedB), twosB=bits(complement(b,n),n);
+    const second=op==='add'?b:complement(b,n);
+    const trace=columnTrace(a,second,n);
+    const signed=a-b;
+    const negative=op==='sub' && signed<0;
+    const magnitude=negative?-signed:op==='sub'?signed:a+b;
+    // U odčítání dvou nezáporných čísel a kladného B carry-out přesně odpovídá A >= B.
+    if (op==='sub' && Boolean(trace.carry)!==(a>=b)) throw new Error('Nesoulad přenosu při odčítání.');
+    return {
+      ...t, width:n, maxWidth:t.n, paddedA,paddedB,rawA:raw(a),rawB:raw(b),negatedB,twosB,
+      second:bits(second,n), trace, difference:signed, negative,
+      signAnswer:op==='add'?(a+b).toString(2).padStart(n,'0'):(negative?'−':'')+bits(magnitude,n),
+      finalBinary:op==='add'?(a+b).toString(2).padStart(n,'0') : (negative?'−':'')+bits(magnitude,n),
+      magnitude, intermediate:bits(trace.low,n),
+      invertedIntermediate:inverse(bits(trace.low,n)),
+      magnitudeBits:bits(complement(trace.low,n),n),
+      decimal:op==='add'?a+b:a-b,
+      carryOutside:Boolean(trace.carry),
+      fullAddition:trace.full.toString(2).padStart(n+Number(Boolean(trace.carry)),'0')
+    };
+  }
+  function randomInt(from,to,rng=Math.random) {
+    if (from>to) throw new RangeError('Neplatný interval.');
+    return from+Math.floor(Math.min(.999999999999,Math.max(0,rng()))*(to-from+1));
+  }
+  function generate({difficulty='medium',mode='mixed',subCycle=0,weakStep=null,rng=Math.random}={}) {
+    const n=widths[difficulty];requireWidth(n);
+    if (!['add','sub','mixed'].includes(mode)) throw new RangeError('Neplatný režim.');
+    const max=(1<<n)-1;
+    const op=mode==='mixed'?(rng()<.5?'add':'sub'):mode;
+    if (op==='add') {
+      let a=randomInt(0,max,rng),b=randomInt(0,max,rng);
+      if (weakStep==='sum') {a=randomInt(1,max,rng);b=randomInt(1,max,rng);}
+      return {n,a,b,op};
+    }
+    // V každé trojici odčítání v běžném režimu vznikne záporný, nulový a kladný výsledek.
+    let outcome=['negative','zero','positive'][((subCycle%3)+3)%3];
+    if (weakStep==='negative') outcome='negative';
+    if (weakStep==='carry') outcome=['negative','positive'][randomInt(0,1,rng)];
+    if (weakStep==='align') outcome='negative';
+    let a,b;
+    if (outcome==='negative') {b=randomInt(1,max,rng);a=randomInt(0,b-1,rng);}
+    else if (outcome==='zero') {b=randomInt(1,max,rng);a=b;}
+    else {b=randomInt(1,max-1,rng);a=randomInt(b+1,max,rng);}
+    return {n,a,b,op};
+  }
+  /** Samostatný generátor tiskových CVIČENÍ. Nenahrazuje generátor interaktivních úloh.
+   * `includeTrivial` je ve výchozím stavu true. Jednoduché zadání se v sestavě
+   * vyskytne cíleně (nejméně každý čtvrtý příklad), ne jen náhodou.
+   * Vypnutí vylučuje operandy 0/1 a rozdíly 0 či ±1 u odčítání.
+   */
+  function generateWorksheet({difficulty='medium',mode='mixed',subCycle=0,ordinal=0,includeTrivial=true,rng=Math.random}={}) {
+    const n=widths[difficulty];requireWidth(n);
+    if(!['add','sub','mixed'].includes(mode)||typeof includeTrivial!=='boolean'||!isInt(ordinal)||ordinal<0)
+      throw new RangeError('Neplatná volba pro tisková cvičení.');
+    const max=(1<<n)-1;
+    const op=mode==='mixed'?(rng()<.5?'add':'sub'):mode;
+    if(includeTrivial && ordinal%4===0){
+      if(op==='sub') {
+        const b=(n>=5&&ordinal===0)?24:randomInt(1,max,rng);
+        return {n,a:b,b,op}; // nulový rozdíl, např. 24−24
+      }
+      return {n,a:0,b:randomInt(0,max,rng),op}; // například 0+7
+    }
+    if(includeTrivial && ordinal%4===2){
+      if(op==='sub')return {n,a:0,b:ordinal%8===2?1:randomInt(2,max,rng),op};
+      return {n,a:randomInt(0,max,rng),b:0,op};
+    }
+    if(!includeTrivial){
+      if(op==='add')return {n,a:randomInt(2,max,rng),b:randomInt(2,max,rng),op};
+      // Pro odčítání bez A=B střídáme kladné a záporné rozdíly.
+      if(subCycle%2===0){
+        const b=randomInt(4,max,rng);
+        return {n,a:randomInt(2,b-2,rng),b,op};
+      }
+      const b=randomInt(2,max-2,rng);
+      return {n,a:randomInt(b+2,max,rng),b,op};
+    }
+    return generate({difficulty,mode:op,subCycle,rng});
+  }
+  function stages(t) {
+    return t.op==='add'?['sum']:['align','invert','twos','sum','carry',...(t.a<t.b?['negative']:[])];
+  }
+  function stageLabel(id) {
+    return ({align:'Zarovnání',invert:'Negace bitů',twos:'2. doplněk',sum:'Sčítání s přenosy',carry:'Vyhodnocení přenosu',negative:'Záporný výsledek'})[id]||'';
+  }
+  function validBinary(s,n) { return typeof s==='string' && new RegExp('^[01]{'+n+'}$').test(s); }
+  function evaluate(t,stage,values) {
+    const s=solve(t),n=s.width;
+    const get=(key)=>String(values[key]??'').trim();
+    const field=(key,w,expected,empty,error,success) => {
+      const got=get(key);
+      if (!validBinary(got,w)) return {ok:false,ready:false,kind:'format',field:key,message:empty};
+      if (got!==expected) return {ok:false,ready:true,kind:'incorrect',field:key,message:error};
+      return {ok:true,ready:true,message:success||'Správně.'};
+    };
+    if(stage==='align') {
+      for(const [k,rawValue,expected] of [['alignedA',s.rawA,s.paddedA],['alignedB',s.rawB,s.paddedB]]) {
+        const f=field(k,n,expected,`Zkontroluj počet bitů. Obě čísla musí mít přesně ${bitCount(n)} a obsahovat pouze 0 a 1.`,
+          `Zarovnej ${rawValue} na ${bitCount(n)}. Nuly se doplňují pouze zleva; hodnotu čísla neměň.`);
+        if(!f.ok) return f;
+      }
+      return {ok:true,ready:true,message:s.rawA.length===s.rawB.length
+        ?`Správně. Obě čísla mají už ${bitCount(n)}. Žádné nuly nebylo potřeba doplnit.`
+        :`Správně. Zarovnal(a) jsi oba operandy na ${bitCount(n)}, nikoli na maximálních ${bitCount(t.n)}.`};
+    }
+    if(stage==='invert') return field('invertedB',n,s.negatedB,`Vyplň přesně ${bitCount(n)} (jen 0 a 1).`,
+      'Při negaci se každá 0 změní na 1 a každá 1 na 0. Zkontroluj bity menšitele.', 'Správně. To je 1. doplněk.');
+    if(stage==='twos') return field('twosB',n,s.twosB,`Doplň ${bitCount(n)} dvojkového doplňku.`,
+      'Nezapomeň přičíst jedničku k negovanému číslu a výsledek ponechat na stejné šířce.', 'Správně. Máš vytvořený 2. doplněk menšitele.');
+    if(stage==='sum') {
+      for(let i=0;i<n;i++){
+        if(!['0','1'].includes(get('bit'+i))) return {ok:false,ready:false,kind:'format',field:'bit'+i,message:`Chybí výsledný bit na pozici ${i}. Vyplň všech ${bitCount(n)} 0 nebo 1.`};
+        if(!['0','1'].includes(get('carry'+i))) return {ok:false,ready:false,kind:'format',field:'carry'+i,message:`Chybí přenos C${i+1}. Každý přenos musí být 0 nebo 1.`};
+      }
+      for(let i=0;i<n;i++) {
+        const c=s.trace.columns[i];
+        if(Number(get('bit'+i))!==c.bit || Number(get('carry'+i))!==c.out)
+          return {ok:false,ready:true,kind:'incorrect',field:Number(get('bit'+i))!==c.bit?'bit'+i:'carry'+i,
+            message:`Zkontroluj sloupec 2^${i}: ${c.a} + ${c.b} + přenos ${c.in} = ${c.total} (binárně ${c.total.toString(2)}). Výsledný bit je ${c.bit} a přenos C${i+1} je ${c.out}.`};
+      }
+      return {ok:true,ready:true,message: t.op==='add'?'Správně. Přenosy i výsledné bity souhlasí.':'Správně. Teď posuď přenos mimo pevnou šířku.'};
+    }
+    if(stage==='carry'){
+      if(!['yes','no'].includes(get('carryDecision'))) return {ok:false,ready:false,kind:'format',field:'carryDecision',message:'Vyber ANO nebo NE.'};
+      if((get('carryDecision')==='yes')!==s.carryOutside) return {ok:false,ready:true,kind:'incorrect',field:'carryDecision',message:
+        `Zkontroluj přenos C${n} z nejvyššího sloupce. ${s.carryOutside?'Vznikla 1 mimo zvolených '+n+' bitů.':'Mimo zvolených '+n+' bitů nevznikla žádná 1.'}`};
+      return {ok:true,ready:true,message:s.carryOutside?'Ano. Přenos zahodíme; výsledek je nezáporný.':'Ne. Bez přenosu je výsledek záporný; ještě vytvoříme jeho absolutní hodnotu.'};
+    }
+    if(stage==='negative') {
+      for(const [key,correct,why] of [
+        ['invertedResult',s.invertedIntermediate,'Při negaci znovu prohoď všechny 0 a 1 v mezivýsledku.'],
+        ['magnitudeBits',s.magnitudeBits,'K negovanému mezivýsledku ještě přičti jedničku.']]) {
+        const r=field(key,n,correct,`Doplň přesně ${bitCount(n)} bez znaménka.`,why);
+        if(!r.ok) return r;
+      }
+      const text=get('signedResult').replace(/^-/, '−');
+      if(validBinary(text,n)) return {ok:false,ready:true,kind:'incorrect',field:'signedResult',message:'Výsledek je záporný. Nezapomeň před binární zápis přidat znaménko minus.'};
+      if(!new RegExp('^−[01]{'+n+'}$').test(text)) return {ok:false,ready:false,kind:'format',field:'signedResult',message:`Výsledek je záporný. Zapiš znaménko minus a přesně ${bitCount(n)}, například −00011.`};
+      if(text!==s.signAnswer) return {ok:false,ready:true,kind:'incorrect',field:'signedResult',message:'Výsledek je záporný. Přidej znaménko minus před skutečnou absolutní hodnotu (po druhém doplňku).'};
+      return {ok:true,ready:true,message:'Správně. Rozlišuješ mezivýsledek v doplňkovém kódu a čitelný záporný zápis.'};
+    }
+    throw new RangeError('Neznámý krok.');
+  }
+  function explanation(t,stage){
+    const s=solve(t),n=s.width,steps=[];
+    if(stage==='align') {
+      steps.push(`Menšenec ${s.a} zapíšeme přirozeně jako ${s.rawA}. Menšitel ${s.b} jako ${s.rawB}.`);
+      steps.push(`Horní mez obtížnosti je ${bitCount(t.n)}; v tomto výpočtu stačí ${bitCount(n)}.`);
+      steps.push(s.rawA.length===s.rawB.length
+        ?`Oba operandy už mají ${bitCount(n)}: A = ${s.paddedA}, B = ${s.paddedB}. Není třeba doplňovat nuly.`
+        :`Doplníme pouze kratší zápis zleva: A = ${s.paddedA}, B = ${s.paddedB}.`);
+      steps.push('Nuly vlevo nemění hodnotu. Nuly zprava by ji změnily.');
+    } else if(stage==='invert'){
+      steps.push(`Původní menšitel je ${s.paddedB}.`);
+      [...s.paddedB].forEach((bit,i)=>steps.push(`Na pozici ${n-1-i}: ${bit} → ${bit==='0'?'1':'0'}.`));
+      steps.push(`První doplněk je ${s.negatedB}.`);
+    } else if(stage==='twos'){
+      steps.push(`První doplněk: ${s.negatedB}.`);
+      steps.push(`Přičteme 1: ${s.negatedB} + 1 = ${(parseInt(s.negatedB,2)+1).toString(2).padStart(n,'0')}.`);
+      steps.push(`Ponecháme ${bitCount(n)}: 2. doplněk = ${s.twosB}.`);
+      if(s.twosB===s.paddedB) steps.push('Zvláštní případ: tento bitový vzor je po vytvoření 2. doplňku stejný. To je v pořádku.');
+    } else if(stage==='sum'){
+      steps.push(`Sčítáme zprava doleva: ${s.paddedA} + ${s.second}. Počáteční přenos C₀ = 0.`);
+      s.trace.columns.forEach(c=>steps.push(`Sloupec 2^${c.index}: ${c.a} + ${c.b} + C${c.index} (${c.in}) = ${c.total}. Piš ${c.bit}, přenes C${c.index+1} = ${c.out}.`));
+      steps.push(`Výsledných ${bitCount(n)}: ${s.intermediate}. Přenos mimo slovo: ${s.trace.carry}. Celý součet: ${s.fullAddition}.`);
+    } else if(stage==='carry'){
+      steps.push(`V nejvyšším sloupci vzniklo C${n} = ${Number(s.carryOutside)}.`);
+      steps.push(s.carryOutside?`ANO: krajní jedničku zahodíme. Zbylých ${bitCount(n)} představuje nezáporný rozdíl.`:`NE: žádný přenos nevznikl. Zbylých ${bitCount(n)} je záporný mezivýsledek v doplňkovém kódu.`);
+      steps.push(s.carryOutside?`Výsledek: ${s.intermediate}₂ = ${s.difference}₁₀.`:`Ještě musíme vypočítat absolutní hodnotu ${s.intermediate}: inverze + 1.`);
+    } else if(stage==='negative'){
+      steps.push(`Mezivýsledek v 2. doplňku: ${s.intermediate}. Není to kladná absolutní hodnota.`);
+      steps.push(`Invertujeme bity: ${s.intermediate} → ${s.invertedIntermediate}.`);
+      steps.push(`Přičteme jedničku: ${s.invertedIntermediate} + 1 → ${s.magnitudeBits}.`);
+      steps.push(`Před absolutní hodnotu napíšeme minus: ${s.signAnswer}₂ = ${s.difference}₁₀.`);
+    }
+    return steps;
+  }
+  function resultDisplay(t) {
+    const s=solve(t);
+    return {binary:s.finalBinary,decimal:s.decimal,carry:s.trace.carry};
+  }
+  return Object.freeze({widths,names,requireTask,workWidth,bits,raw,inverse,complement,columnTrace,solve,generate,generateWorksheet,stages,stageLabel,validBinary,evaluate,explanation,resultDisplay,randomInt});
+});
+
+</script>
+<script>
+/* Uživatelské rozhraní offline trenažéru. Zdroj je při sestavení vložen přímo do HTML. */
+(function () {
+'use strict';
+const C=window.BinaryCore;
+if(!C) throw new Error('Chybí výpočetní jádro.');
+const STORE='dvojkova-aritmetika-sos-v3';
+const WIDTH_RULE=2; // od 3.5 je n v uloženém zadání maximální šířka, ne povinná
+const THEME_STORE='dvojkova-aritmetika-theme';
+let themeIsExplicit=false;
+function updateThemeButton(){
+  const dark=document.documentElement.dataset.theme==='dark';
+  document.documentElement.style.colorScheme=dark?'dark':'light';
+  byId('themeToggle').setAttribute('aria-pressed',String(dark));
+  byId('themeToggle').setAttribute('aria-label',dark?'Zapnout světlý režim':'Zapnout tmavý režim');
+  byId('themeIcon').textContent=dark?'☀':'☾';
+  byId('themeLabel').textContent=dark?'Světlý režim':'Tmavý režim';
+  byId('themeColor').setAttribute('content',dark?'#191b22':'#fff9ef');
+}
+function initializeTheme(){
+  try { themeIsExplicit=['light','dark'].includes(localStorage.getItem(THEME_STORE)); } catch (_) {}
+  updateThemeButton();
+  byId('themeToggle').addEventListener('click',()=>{
+    const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=next;
+    themeIsExplicit=true;
+    try {localStorage.setItem(THEME_STORE,next);} catch (_) {}
+    updateThemeButton();
+  });
+  if(typeof matchMedia==='function'){
+    const query=matchMedia('(prefers-color-scheme: dark)');
+    const onChange=e=>{
+      if(themeIsExplicit)return;
+      document.documentElement.dataset.theme=e.matches?'dark':'light';
+      updateThemeButton();
+    };
+    if(query.addEventListener)query.addEventListener('change',onChange);
+    else if(query.addListener)query.addListener(onChange);
+  }
+}
+const byId=id=>document.getElementById(id);
+const S={
+  mode:'sub', difficulty:'medium', solved:0, correct:0, hints:0, subCycle:0,
+  history:[], mistakes:{}, worksheet:null, worksheetTrivial:true, task:null, progress:null,
+  lastReviewAt:0, reviewVisible:false, lastMode:null, mixedStreak:0, focusStep:null, retryCursor:0
+};
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bitCount=n=>`${n} ${n===1?'bit':n>=2&&n<=4?'bity':'bitů'}`;
+const decimalSign=n=>n<0?'−'+Math.abs(n):String(n);
+const stageNames={align:'Zarovnání počtu bitů',invert:'Negace menšitele',twos:'Vytvoření 2. doplňku',sum:'Sčítání po sloupcích',carry:'Vyhodnocení přenosu',negative:'Záporný výsledek'};
+const stageRules={
+  align:['Zvolená obtížnost určuje nejvyšší počet bitů, ne povinnost využít všechny. Nuly doplňujeme jen kratšímu číslu zleva.',
+      'Obě čísla již mají stejnou délku? Nic nepřidávej. Jinak doplň kratší zápis pouze na délku delšího.'],
+  invert:['1. doplněk znamená převrácení každého bitu: 0 ↔ 1.',
+      'Postupuj bit po bitu: kde je v B jednička, napiš nulu, a naopak. Šířka se nemění.'],
+  twos:['2. doplněk = 1. doplněk + 1, při stále stejné šířce.',
+      'Přičítej zprava jedničku. Dokud vzniká přenos, pokračuj vlevo; případnou koncovou jedničku mimo šířku vynech.'],
+  sum:['Sčítej zprava doleva. Počáteční přenos C₀ je vždy 0. 1 + 1 = 10₂.',
+      'V pravém sloupci sečti oba bity a 0. Zapiš poslední bit výsledku, přenos C₁ vlož nad další sloupec. Pokračuj směrem doleva.'],
+  carry:['Při odčítání A − B nezáporných čísel s B > 0 rozhoduje carry-out za n-tým bitem.',
+      'Podívej se na Cₙ z nejvyššího sloupce, ne na samotný nejvyšší bit výsledku. Cₙ = 1 znamená ANO.'],
+  negative:['Bez carry-out je nbitový mezivýsledek záporný kód, nikoli kladná absolutní hodnota.',
+      'Znovu invertuj všechny bity mezivýsledku, přičti 1 a před získanou absolutní hodnotu napiš znaménko minus.']
+};
+const STAGES_SUB=['align','invert','twos','sum','carry','negative'];
+function safeInt(v,limit=1000000){return Number.isSafeInteger(v)&&v>=0&&v<=limit?v:0;}
+function freshProgress(){return {index:0,answers:{},attempts:{},errors:{},hintLevels:{},walkIndex:0,walkStage:null,feedback:null,finished:false,usedFullSolution:false,hintUses:0,weakFocus:null,source:'random'};}
+function save(){
+  try {localStorage.setItem(STORE,JSON.stringify({mode:S.mode,difficulty:S.difficulty,solved:S.solved,correct:S.correct,
+    hints:S.hints,subCycle:S.subCycle,history:S.history,mistakes:S.mistakes,worksheet:S.worksheet,worksheetTrivial:S.worksheetTrivial,widthRule:WIDTH_RULE,task:S.task,
+    progress:S.progress,lastReviewAt:S.lastReviewAt,reviewVisible:S.reviewVisible,lastMode:S.lastMode,mixedStreak:S.mixedStreak}));}
+  catch(e){/* soukromé režimy bez dostupného úložiště */}
+}
+function safeProgress(p,t){
+  const out=freshProgress();
+  if(!p||typeof p!=='object')return out;
+  const steps=C.stages(t);
+  out.index=Math.min(steps.length,safeInt(p.index,20));
+  out.finished=!!p.finished&&out.index===steps.length;
+  const fields=['alignedA','alignedB','invertedB','twosB','invertedResult','magnitudeBits','signedResult','carryDecision'];
+  for(let i=0;i<8;i++) {fields.push('bit'+i,'carry'+i);}
+  for(const k of fields){const v=p.answers?.[k];if(typeof v==='string'&&v.length<=15&&/^[01−-]*$/.test(v))out.answers[k]=v;else if(k==='carryDecision'&&['yes','no'].includes(v))out.answers[k]=v;}
+  for(const stage of steps){out.attempts[stage]=safeInt(p.attempts?.[stage],999);out.errors[stage]=safeInt(p.errors?.[stage],999);out.hintLevels[stage]=Math.min(3,safeInt(p.hintLevels?.[stage],3));}
+  out.usedFullSolution=!!p.usedFullSolution;
+  out.hintUses=safeInt(p.hintUses,100);
+  out.weakFocus=typeof p.weakFocus==='string'&&stageNames[p.weakFocus]?p.weakFocus:null;
+  out.source=['random','repeat','example','weak'].includes(p.source)?p.source:'random';
+  out.walkStage=steps.includes(p.walkStage)?p.walkStage:null;
+  out.walkIndex=safeInt(p.walkIndex,30);
+  return out;
+}
+function hydrate(){
+  try {
+    const value=JSON.parse(localStorage.getItem(STORE)||'null');if(!value||typeof value!=='object')return;
+    if(['add','sub','mixed'].includes(value.mode))S.mode=value.mode;
+    if(C.widths[value.difficulty])S.difficulty=value.difficulty;
+    for(const name of ['solved','correct','hints','subCycle','lastReviewAt','mixedStreak']) S[name]=safeInt(value[name],1000000);
+    S.correct=Math.min(S.correct,S.solved);
+    S.reviewVisible=!!value.reviewVisible&&S.solved>0;
+    S.worksheetTrivial=typeof value.worksheetTrivial==='boolean'?value.worksheetTrivial:true;
+    if(['add','sub'].includes(value.lastMode))S.lastMode=value.lastMode;
+    if(Array.isArray(value.history))S.history=value.history.filter(h=>{
+      try {C.requireTask(h);return typeof h.correct==='boolean';} catch(e){return false;}
+    }).slice(0,10).map(h=>({n:h.n,a:h.a,b:h.b,op:h.op,correct:h.correct,hints:safeInt(h.hints,100),errors:safeInt(h.errors,100),at:safeInt(h.at,Date.now()+100000),result:C.resultDisplay(h).binary}));
+    if(value.mistakes&&typeof value.mistakes==='object')for(const k of Object.keys(stageNames))S.mistakes[k]=safeInt(value.mistakes[k],1000000);
+    if(value.worksheet&&Array.isArray(value.worksheet.items)&&value.worksheet.items.length<=20&&value.worksheet.items.length>=1&&value.worksheet.items.every(t=>{try{C.requireTask(t);return true;}catch(e){return false;}})) {
+      S.worksheet={items:value.worksheet.items.map(t=>({n:t.n,a:t.a,b:t.b,op:t.op})),mode:['add','sub','mixed'].includes(value.worksheet.mode)?value.worksheet.mode:'mixed',
+        difficulty:C.widths[value.worksheet.difficulty]?value.worksheet.difficulty:'medium',includeTrivial:value.worksheet.includeTrivial!==false,createdAt:safeInt(value.worksheet.createdAt,Date.now()+100000)};
+    }
+    try {
+      C.requireTask(value.task);
+      S.task={n:value.task.n,a:value.task.a,b:value.task.b,op:value.task.op};
+      // U starých dat (3.4) byly mezikroky už vyplněné na maximální šířku.
+      // Pro kratší skutečné slovo nejsou konzistentní. Zachováme statistiky,
+      // historii i zadání, ale pouze rozpracované řešení z bezpečnostních důvodů restartujeme.
+      const oldWidthRule=value.widthRule!==WIDTH_RULE && C.workWidth(S.task)<S.task.n;
+      S.progress=oldWidthRule?freshProgress():safeProgress(value.progress,S.task);
+    }catch(e){}
+  }catch(e){/* neplatný lokální záznam má bezpečný výchozí stav */}
+}
+function toast(message){const e=byId('toast');e.textContent=message;e.hidden=false;window.clearTimeout(toast.timer);toast.timer=window.setTimeout(()=>e.hidden=true,3400);}
+function setTask(t,source='random',weakFocus=null){
+  C.requireTask(t);
+  S.task={n:t.n,a:t.a,b:t.b,op:t.op};S.progress=freshProgress();S.progress.source=source;S.progress.weakFocus=weakFocus;
+  S.reviewVisible=false;save();render();
+}
+function nextTask(weak=null){
+  let mode=S.mode;
+  if(weak){if(weak==='align'||weak==='invert'||weak==='twos'||weak==='carry'||weak==='negative')mode='sub';else if(weak==='sum')mode='add';}
+  let t=C.generate({difficulty:S.difficulty,mode,subCycle:S.subCycle,weakStep:weak});
+  // Smíšený režim používá náhodnou volbu, ale po dvou stejných operacích nuceně vystřídá.
+  if(mode==='mixed' && S.mixedStreak>=2&&t.op===S.lastMode){t=C.generate({difficulty:S.difficulty,mode:S.lastMode==='add'?'sub':'add',subCycle:S.subCycle,weakStep:weak});}
+  if(t.op==='sub')S.subCycle++;
+  S.mixedStreak=t.op===S.lastMode?S.mixedStreak+1:1;
+  S.lastMode=t.op;
+  setTask(t,weak?'weak':'random',weak);
+}
+function currentStage(){return C.stages(S.task)[S.progress.index]||null;}
+function updateStats(){
+  byId('statSolved').textContent=S.solved;
+  byId('statCorrect').textContent=S.correct;
+  byId('statAccuracy').textContent=S.solved?Math.round(100*S.correct/S.solved)+' %':'—';
+  byId('statHints').textContent=S.hints;
+}
+function setControls(){
+  byId('difficulty').value=S.difficulty;
+  byId('modeSwitch').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===S.mode)));
+}
+function renderProblem(){
+  const s=C.solve(S.task),p=S.progress,op=S.task.op==='add'?'＋':'−';
+  const widthInfo=`nejvýše ${bitCount(S.task.n)} · výpočet ${bitCount(s.width)}`;
+  byId('problemTag').textContent=p.source==='weak'?`Procvičujeme slabé místo · ${widthInfo}`:
+    p.source==='repeat'?'Opakování příkladu · '+widthInfo:p.source==='example'?'Ukázkový příklad z hodiny · '+widthInfo:'Samostatný příklad · '+widthInfo;
+  byId('problemTitle').textContent=`${s.a} ${S.task.op==='add'?'+':'−'} ${s.b}`;
+  byId('problemPill').textContent=S.task.op==='add'?'Sčítání':'Odčítání přes 2. doplněk';
+  byId('problemSubtitle').textContent=S.task.op==='add'?'Oba operandy jsou nezáporná binární čísla. Zapiš výsledek i přenosy.':
+    'Porovnej délku přirozených zápisů; jen kratšímu případně doplň nuly. Pak negace, +1, sčítání a přenos.';
+  const pair=byId('problemPair');pair.replaceChildren();
+  for(const [sign,str] of [['',S.task.op==='add'?s.paddedA:s.rawA],[op,S.task.op==='add'?s.paddedB:s.rawB]]) {
+    const label=document.createElement('span');label.className='operation';label.textContent=sign||' ';
+    const num=document.createElement('span');num.className='operand';num.textContent=str;
+    pair.append(label,num);
+  }
+  byId('problemCaption').textContent=S.task.op==='add'?
+    `Zvolených ${bitCount(S.task.n)} je horní mez operandů; pro tento součet stačí ${s.width}. Nový přenos vlevo ponecháme jako další bit výsledku.`:
+    `Zvolených ${bitCount(S.task.n)} je horní mez; v tomto příkladu používej ${bitCount(s.width)}. Doplňkový kód nezaměňuj se zápisem se znaménkem „−“.${s.rawA.length===s.rawB.length?' Oba operandy už mají stejně bitů — nuly nepřidávej.':''}`;
+  const steps=C.stages(S.task);
+  byId('progressCount').textContent=p.finished?'Dokončeno':`Krok ${p.index+1} z ${steps.length}`;
+  byId('stepper').replaceChildren(...steps.map((id,i)=>{
+    const elem=document.createElement('span');elem.className='step-chip '+(p.finished||i<p.index?'done':i===p.index?'now':'future');
+    elem.textContent=`${i+1} · ${C.stageLabel(id)}`;return elem;
+  }));
+}
+function inputBinary(key,label,n,placeholder='', signed=false) {
+  const value=esc(S.progress.answers[key]??'');
+  return `<div class="binary-field"><label for="input-${key}">${esc(label)}</label><input class="mono binary-entry" id="input-${key}" type="text" name="${key}" data-key="${key}" inputmode="${signed?'text':'numeric'}" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="${n+(signed?1:0)}" placeholder="${esc(placeholder||'?'.repeat(n))}" value="${value}" aria-label="${esc(label)}"></div>`;
+}
+function flowBox(label,value){return `<div class="flow-part"><div class="flow-label">${esc(label)}</div><code class="mono">${esc(value)}</code></div>`;}
+// Přirozené pořadí písemného výpočtu: bit 0 → C1 → bit 1 → C2 → ... → Cn.
+// Klíče "carry0" až "carry(n-1)" odpovídají přenosům C1 až Cn.
+function sumFieldOrder(n){
+  const keys=[];
+  for(let position=0;position<n;position++) keys.push('bit'+position,'carry'+position);
+  return keys;
+}
+function focusSumField(field){
+  if(!field)return;
+  field.focus({preventScroll:true});
+  // Na telefonu je výpočet širší než karta. Posunout smíme jen jeho vlastní oblast,
+  // jinak by skok nahoru/dolů mohl nečekaně posouvat celou stránku.
+  const scroll=field.closest('.work-scroll');
+  if(!scroll)return;
+  const fieldRect=field.getBoundingClientRect(),scrollRect=scroll.getBoundingClientRect();
+  const pad=10;
+  if(fieldRect.right>scrollRect.right-pad)scroll.scrollLeft+=fieldRect.right-(scrollRect.right-pad);
+  else if(fieldRect.left<scrollRect.left+pad)scroll.scrollLeft-=scrollRect.left+pad-fieldRect.left;
+}
+function moveSumFocus(key,backwards=false){
+  if(currentStage()!=='sum')return false;
+  const order=sumFieldOrder(C.workWidth(S.task));
+  const index=order.indexOf(key);
+  if(index<0)return false;
+  const next=order[index+(backwards?-1:1)];
+  if(next){
+    focusSumField(byId('stepFields').querySelector(`[data-key="${next}"]`));
+    return true;
+  }
+  if(!backwards){byId('checkStep').focus({preventScroll:true});return true;}
+  return false;
+}
+function board(t){
+  const s=C.solve(t), n=s.width, v=S.progress.answers;
+  const start=`<div class="work-scroll" aria-label="Výpočet po bitech"><div class="calc-board mono" style="--count:${n+1}">`;
+  let h=start+'<div class="row-label">Přenosy</div>';
+  for(let j=n;j>=0;j--){
+    if(j===0){h+='<div class="board-cell carry-cell"><span class="carry-small">C₀</span><span class="initial-carry">0</span></div>';continue;}
+    const pos=j-1,k='carry'+pos;
+    h+=`<div class="board-cell carry-cell ${j===n?'final-carry':''}"><span class="carry-small">C${j}</span><input class="board-input" type="text" data-key="${k}" data-pos="${pos}" maxlength="1" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Přenos C${j} z bitové pozice ${pos} do dalšího sloupce" tabindex="-1" value="${esc(v[k]??'')}" placeholder="?"></div>`;
+  }
+  for(const [label,str,first] of [['A',s.paddedA,true],[t.op==='sub'?'＋(−B)':'＋ B',s.second,false]]){
+    h+=`<div class="row-label ${first?'':'sum-label'}">${label}</div><div class="board-cell"> </div>`;
+    for(const digit of str) h+=`<div class="board-cell info">${digit}</div>`;
+  }
+  h+='<div class="board-rule" aria-hidden="true"></div><div class="row-label">Výsledek</div><div class="board-cell board-prefix">Cₙ ↑</div>';
+  for(let j=n-1;j>=0;j--){const k='bit'+j;
+    h+=`<div class="board-cell"><input class="board-input sum-bit" data-key="${k}" data-pos="${j}" type="text" maxlength="1" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Výsledný bit na pozici ${j}" tabindex="${j===0?'0':'-1'}" value="${esc(v[k]??'')}" placeholder="?"></div>`;
+  }
+  return h+'</div></div><p class="carry-caption">Žlutá políčka = přenosy C₁ až Cₙ nad sloupci. Zelená políčka = výsledné bity. Začni úplně vpravo dole: zapiš výsledný bit, přejdi nahoru na přenos C₁ a potom dolů na další bit vlevo. Takto pokračuj až k Cₙ; C₀ = 0. Po posledním přenosu přejdeš na kontrolu. Chybnou hodnotu opravíš prostým stiskem 0 nebo 1 v daném políčku.</p>';
+}
+function renderStage(){
+  const steps=C.stages(S.task),id=currentStage(),p=S.progress,s=C.solve(S.task);
+  const finished=p.finished;
+  byId('exerciseCard').hidden=finished;
+  byId('finished').hidden=!finished;
+  if(finished){renderFinished();return;}
+  byId('stageOverline').textContent=S.task.op==='add'?'Binární sčítání · jeden výpočet':'Odčítání pomocí sčítačky';
+  byId('stageCounter').textContent=`${p.index+1} / ${steps.length}`;
+  byId('stepTitle').textContent=stageNames[id];
+  const desc={
+    align:s.rawA.length===s.rawB.length
+      ?`Krok 1: obě čísla už mají ${bitCount(s.width)}. Nic nepřidávej. Zvolených ${bitCount(S.task.n)} je pouze maximum.`
+      :`Krok 1: čísla mají různé délky. Doplň nuly pouze zleva ke kratšímu, aby obě měla ${bitCount(s.width)}. Maximum pro obtížnost je ${bitCount(S.task.n)}.`,
+    invert:'Krok 2: vytvoř 1. doplněk menšitele. Každou 0 změň na 1 a každou 1 na 0.',
+    twos:'Krok 3: k invertovanému menšiteli přičti jedničku. Výsledek ponech na zvolené šířce.',
+    sum:`Krok ${S.task.op==='add'?1:4}: sčítej zprava doleva, doplň ${s.width} výsledných bitů a všechny přenosy C₁ až Cₙ.`,
+    carry:`Krok 5: rozhodni podle posledního přenosu C${s.width} z právě dokončeného sčítání.`,
+    negative:'Krok 6: bez přenosu je mezivýsledek záporný. Ještě jednou vytvoř 2. doplněk, a pak přidej znak minus před absolutní hodnotu.'
+  };
+  byId('stageDescription').textContent=desc[id];
+  let html='';
+  if(id==='align') {
+    html=`<div class="compact-rule"><strong>Porovnej zápisy:</strong> A = <code>${s.rawA}</code>, B = <code>${s.rawB}</code>. ${s.rawA.length===s.rawB.length?'Jsou stejně dlouhé — nuly nedoplňuj.':'Zleva doplň nuly pouze u kratšího zápisu.'}</div><div class="input-grid">`+
+      inputBinary('alignedA','A · zarovnaný menšenec',s.width)+inputBinary('alignedB','B · zarovnaný menšitel',s.width)+'</div>'+
+      (s.rawA.length===s.rawB.length?'<button class="btn secondary" type="button" id="skipPadding">Pokračovat bez doplňování nul →</button>':'');
+  } else if(id==='invert'){
+    html=`<div class="flow-display">${flowBox('Původní B',s.paddedB)}<span class="flow-arrow">→</span>${flowBox('1. doplněk','?'.repeat(s.width))}</div>`+
+      '<div class="input-grid">'+inputBinary('invertedB','Zapiš 1. doplněk menšitele (~B)',s.width)+'</div>';
+  } else if(id==='twos') {
+    html=`<div class="process-line"><code class="mono"> ${s.negatedB}<br>+${' '.repeat(s.width-1)}1<br>${'─'.repeat(s.width+1)}</code><small class="subtle">Napiš výsledek po přičtení 1 (přesně ${bitCount(s.width)}).</small></div>`+
+      '<div class="input-grid">'+inputBinary('twosB','Dvojkový doplněk (−B)',s.width)+'</div>';
+  } else if(id==='sum') html=(S.task.op==='sub' && s.twosB===s.paddedB
+      ? `<div class="compact-rule"><strong>Zvláštní případ:</strong> 2. doplněk <code>${s.paddedB}</code> má stejný bitový zápis jako původní B. Je to správně, pokračuj se sčítáním.</div>` : '')+board(S.task);
+  else if(id==='carry'){
+    html=`<div class="process-line"><code class="mono"> ${s.paddedA}<br>+${s.second}<br>${'─'.repeat(s.width+1)}<br> ${s.fullAddition}</code><small class="subtle">V tomto okamžiku už znáš součet včetně přenosu mimo ${bitCount(s.width)}.</small></div>`+
+      `<fieldset class="decision-field"><legend>Vznikl přenos mimo zvolených ${bitCount(s.width)}?</legend>`+
+      `<label class="decision-option"><input type="radio" name="carryDecision" value="yes" ${p.answers.carryDecision==='yes'?'checked':''}> ANO</label>`+
+      `<label class="decision-option"><input type="radio" name="carryDecision" value="no" ${p.answers.carryDecision==='no'?'checked':''}> NE</label></fieldset>`;
+  } else if(id==='negative'){
+    html=`<div class="compact-rule"><strong>Pozor:</strong> <code>${s.intermediate}</code> je mezivýsledek v 2. doplňku, nikoli čitelný záporný výsledek. Pro absolutní hodnotu znovu invertuj bity a přičti 1.</div>`+
+      '<div class="input-grid">'+inputBinary('invertedResult','Negace mezivýsledku',s.width)+inputBinary('magnitudeBits','Absolutní hodnota · negace + 1',s.width)+
+      inputBinary('signedResult','Čitelný záporný výsledek se znaménkem minus',s.width,'−'+'?'.repeat(s.width),true)+'</div>';
+  }
+  byId('stepFields').innerHTML=html;
+  if(id==='align' && s.rawA.length===s.rawB.length){
+    byId('skipPadding').addEventListener('click',()=>{
+      S.progress.answers.alignedA=s.rawA;S.progress.answers.alignedB=s.rawB;
+      checkStage();
+    });
+  }
+  // Nový výpočet začíná úplně vpravo. Po obnovení rozpracované úlohy
+  // pokračujeme v prvním dosud nevyplněném políčku stejného pořadí.
+  if(id==='sum'){
+    const next=sumFieldOrder(s.width).find(key=>!/^[01]$/.test(p.answers[key]??''));
+    if(next)focusSumField(byId('stepFields').querySelector(`[data-key="${next}"]`));
+    else byId('checkStep').focus({preventScroll:true});
+  }
+  byId('stepFeedback').innerHTML=p.feedback&&p.feedback.stage===id ? `<div class="feedback ${p.feedback.ok?'good':p.feedback.ready?'bad':'neutral'}"><strong class="feedback-title">${p.feedback.ok?'✓ Správně':p.feedback.ready?'Zkus to opravit':'Ještě není hotovo'}</strong><span>${esc(p.feedback.message)}</span></div>`:'';
+  renderHints();
+  renderWalkthrough();
+}
+function renderHints(){
+  const id=currentStage();if(!id)return;
+  const level=S.progress.hintLevels[id]||0;
+  byId('hintStatus').textContent=level?`Otevřená úroveň ${level} / 3`:'3 úrovně · řešení až po pokusu';
+  byId('hintButton').textContent=level<3?'☼ Potřebuji nápovědu'+(level?' · další úroveň':''):'✓ Všechny úrovně zobrazeny';
+  byId('hintButton').disabled=level===3;
+  const target=byId('hintContent');target.replaceChildren();
+  if(!level)return;
+  const div=document.createElement('div');div.className='hint-content';
+  const strong=document.createElement('strong');strong.textContent=level===1?'Úroveň 1 · pravidlo':level===2?'Úroveň 2 · další krok':'Úroveň 3 · podrobný postup';
+  const p=document.createElement('p');p.textContent=level===1?stageRules[id][0]:level===2?stageRules[id][1]:'Správný postup je otevřený níže po jednotlivých krocích. Odpověď do políček musíš stále zapsat sám/sama.';
+  div.append(strong,p);target.append(div);
+}
+function renderWalkthrough(){
+  const area=byId('walkthrough'),p=S.progress,id=currentStage();area.replaceChildren();
+  if(!id||p.walkStage!==id)return;
+  const steps=C.explanation(S.task,id),i=Math.min(p.walkIndex,steps.length-1);
+  const wrapper=document.createElement('div');wrapper.className='solution-panel';
+  wrapper.innerHTML=`<h3>Postup s vysvětlením</h3><span class="solution-progress">Krok ${i+1} z ${steps.length}</span>`+
+    `<div class="solution-explanation">${esc(steps[i])}</div>`+
+    '<div class="solution-actions"><button type="button" class="btn small secondary" id="walkPrev">← Předchozí</button><button type="button" class="btn small ochre" id="walkNext">Další krok →</button><button type="button" class="btn small plain" id="walkClose">Skrýt postup</button></div>';
+  area.append(wrapper);
+  byId('walkPrev').disabled=i===0;byId('walkNext').disabled=i===steps.length-1;
+  byId('walkPrev').addEventListener('click',()=>{S.progress.walkIndex=Math.max(0,S.progress.walkIndex-1);save();renderWalkthrough();});
+  byId('walkNext').addEventListener('click',()=>{S.progress.walkIndex=Math.min(steps.length-1,S.progress.walkIndex+1);save();renderWalkthrough();});
+  byId('walkClose').addEventListener('click',()=>{S.progress.walkStage=null;save();renderWalkthrough();});
+}
+function stageHasAttempt(id){return (S.progress.attempts[id]||0)>0;}
+function addHintLevel(to=1){
+  const id=currentStage();if(!id)return;
+  const current=S.progress.hintLevels[id]||0;
+  if(to===3&&!stageHasAttempt(id)){
+    showFeedback('Než zobrazíme správný postup, nejprve vyplň tento krok a zkus jej zkontrolovat.',false,false,id);
+    return false;
+  }
+  if(to>current){S.progress.hintLevels[id]=to;S.hints++;S.progress.hintUses++;}
+  if(to===3){S.progress.usedFullSolution=true;S.progress.walkStage=id;S.progress.walkIndex=0;}
+  save();updateStats();renderHints();renderWalkthrough();return true;
+}
+function hintPressed(){
+  const id=currentStage();if(!id)return;
+  const level=S.progress.hintLevels[id]||0;
+  addHintLevel(Math.min(3,level+1));
+}
+function showFeedback(message,ok=false,ready=false,stage=currentStage()){
+  S.progress.feedback={stage,message:String(message),ok,ready};
+  const div=byId('stepFeedback');div.replaceChildren();
+  const feedback=document.createElement('div');feedback.className='feedback '+(ok?'good':ready?'bad':'neutral');
+  const title=document.createElement('strong');title.className='feedback-title';title.textContent=ok?'✓ Správně':ready?'Zkus to opravit':'Ještě není hotovo';
+  const body=document.createElement('span');body.textContent=String(message);feedback.append(title,body);div.append(feedback);
+}
+function checkStage(){
+  const id=currentStage();if(!id)return;
+  const result=C.evaluate(S.task,id,S.progress.answers);
+  if(!result.ready){showFeedback(result.message,false,false,id);save();return;}
+  S.progress.attempts[id]=(S.progress.attempts[id]||0)+1;
+  if(!result.ok){
+    S.progress.errors[id]=(S.progress.errors[id]||0)+1;
+    showFeedback(result.message,false,true,id);
+    const field=byId('input-'+result.field)||byId('stepFields').querySelector(`[data-key="${result.field}"]`);
+    if(field){
+      field.setAttribute('aria-invalid','true');field.classList.add('bad');
+      if(id==='sum')focusSumField(field);
+      else field.focus({preventScroll:true});
+    }
+    save();return;
+  }
+  S.progress.feedback=null;
+  const steps=C.stages(S.task);
+  S.progress.index++;
+  S.progress.walkStage=null;
+  S.progress.walkIndex=0;
+  if(S.progress.index===steps.length){finishTask();return;}
+  save();render();
+  if(currentStage()!=='sum')byId('stepFields').querySelector('input')?.focus({preventScroll:true});
+}
+function finishTask(){
+  if(S.progress.finished)return;
+  S.progress.finished=true;
+  const errs=Object.values(S.progress.errors).reduce((a,b)=>a+b,0);
+  const perfect=errs===0&&!S.progress.usedFullSolution;
+  const hintsUsed=S.progress.hintUses;
+  S.solved++;if(perfect)S.correct++;
+  for(const [stage,count] of Object.entries(S.progress.errors)) S.mistakes[stage]=(S.mistakes[stage]||0)+count;
+  const t=S.task;
+  S.history.unshift({...t,correct:perfect,errors:errs,hints:hintsUsed,at:Date.now(),result:C.resultDisplay(t).binary});
+  S.history=S.history.slice(0,10);
+  if(S.solved>0&&S.solved%10===0&&S.lastReviewAt!==S.solved){S.reviewVisible=true;S.lastReviewAt=S.solved;}
+  save();render();
+}
+function renderFinished(){
+  const r=C.resultDisplay(S.task), s=C.solve(S.task), t=S.task;
+  byId('finishedBinary').textContent=r.binary+'₂';
+  byId('finishedDecimal').textContent='= '+decimalSign(r.decimal)+'₁₀';
+  byId('finishedNote').textContent=t.op==='sub'?
+    s.carryOutside?`Vznikl přenos mimo ${bitCount(s.width)}: odhodili jsme ho. Zbylých ${bitCount(s.width)} je přímo nezáporný rozdíl.`:
+      `Přenos nevznikl. Mezivýsledek ${s.intermediate} je doplňkový kód; jeho negace a +1 dávají absolutní hodnotu ${s.magnitudeBits}, před kterou píšeme minus.`:
+    `Sečetl(a) jsi všechny sloupce včetně přenosů. ${s.trace.carry?'Krajní přenos tvoří další platný bit výsledku.':'Výsledek se vešel do původní šířky.'}`;
+  const holder=byId('finalWalk');holder.replaceChildren();
+  for(const [i,stage] of C.stages(t).entries()){
+    const block=document.createElement('section');block.className='review-step';
+    const title=document.createElement('h3');title.textContent=`${i+1}. ${stageNames[stage]}`;block.append(title);
+    const list=document.createElement('ol');
+    C.explanation(t,stage).forEach(line=>{const li=document.createElement('li');li.textContent=line;list.append(li);});
+    block.append(list);holder.append(block);
+  }
+}
+function renderReview(){
+  const area=byId('review');area.hidden=!S.reviewVisible;
+  if(!S.reviewVisible)return;
+  const entries=S.history.slice(0,10),correct=entries.filter(t=>t.correct).length;
+  const weak=pickWeak();
+  byId('reviewTitle').textContent=`Vyhodnocení po ${S.solved} příkladech`;
+  byId('reviewText').textContent=`V posledních ${entries.length} výpočtech bylo ${correct} bez chyby a odkrytí řešení. `+
+    (Object.values(S.mistakes).some(Boolean)?`Nejvíce chyb evidujeme v kroku „${stageNames[weak]}“. Teď můžeš procvičit právě tuto část.`:'Zatím nemáš evidované chybné kroky. Pokračuj novými příklady nebo si vyber náročnější obtížnost.');
+}
+function pickWeak(){
+  const arr=Object.entries(S.mistakes).filter(([k,v])=>stageNames[k]&&v>0).sort((a,b)=>b[1]-a[1]);
+  return arr.length?arr[0][0]:(S.mode==='add'?'sum':'twos');
+}
+function renderHistory(){
+  const target=byId('historyList');target.replaceChildren();
+  byId('retryWrong').hidden=!S.history.some(r=>!r.correct);
+  if(!S.history.length){const e=document.createElement('p');e.className='empty';e.textContent='Zatím žádné dokončené výpočty.';target.append(e);return;}
+  S.history.forEach((record,index)=>{
+    const item=document.createElement('div');item.className='history-row';
+    const info=document.createElement('div');const math=document.createElement('code');
+    math.textContent=`${record.a} ${record.op==='add'?'+':'−'} ${record.b} = ${record.result}₂`;
+    const small=document.createElement('small');small.textContent=(record.correct?'✓ Bez chyby':'↻ Opraveno po pokusu')+` · ${record.n} bitů${record.hints?' · '+record.hints+' nápověd':''}`;
+    info.append(math,small);item.append(info);
+    const btn=document.createElement('button');btn.type='button';btn.className='btn secondary small';btn.textContent='Zopakovat';btn.setAttribute('aria-label',`Zopakovat příklad ${record.a} ${record.op==='add'?'plus':'minus'} ${record.b}`);
+    btn.addEventListener('click',()=>setTask({n:record.n,a:record.a,b:record.b,op:record.op},'repeat'));
+    item.append(btn);target.append(item);
+  });
+}
+function renderWorksheet(){
+  byId('worksheetTrivial').checked=S.worksheetTrivial;
+  const d=S.worksheet;
+  byId('worksheetStatus').textContent=d?`Připraveno ${d.items.length} úloh · ${C.names[d.difficulty]} · ${d.mode==='mixed'?'smíšené':d.mode==='add'?'sčítání':'odčítání'} · ${d.includeTrivial?'včetně triviálních příkladů':'bez triviálních příkladů'}. Zadání i klíč používají tutéž sadu.`:'Zatím nejsou připravena cvičení pro žáky.';
+  const list=byId('worksheetPreviewBody');list.replaceChildren();
+  if(!d){list.textContent='Nejprve stiskni Generovat cvičení.';return;}
+  d.items.forEach((t,i)=>{
+    const div=document.createElement('div');div.className='sheet-item';
+    div.textContent=`${i+1}. ${t.a} ${t.op==='add'?'+':'−'} ${t.b} (nejvýše ${bitCount(t.n)}; převést do dvojkové soustavy)`;list.append(div);
+  });
+}
+function render(){setControls();updateStats();renderProblem();renderStage();renderReview();renderHistory();renderWorksheet();}
+function preserveInput(key,value){
+  S.progress.answers[key]=value;
+  if(S.progress.feedback?.stage===currentStage()){
+    S.progress.feedback=null;byId('stepFeedback').replaceChildren();
+  }
+  save();
+}
+function bindInputs(){
+  const fields=byId('stepFields');
+  const singleBit=target=>target instanceof HTMLInputElement && target.classList.contains('board-input') && /^(bit|carry)\d+$/.test(target.dataset.key||'');
+  // Jednobitové políčko má maxlength=1. Pokud už v něm číslice je, běžné
+  // vkládání na konec textu nemusí vyvolat událost input. Přímým přepsáním
+  // umožníme opravit bit i přenos bez Backspace / Delete. Následný input
+  // zpracovává původní ukládání stavu a automatický postup zprava doleva.
+  function replaceBit(target,bit){
+    target.value=bit;
+    target.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText',data:bit}));
+  }
+  fields.addEventListener('focusin',e=>{
+    if(singleBit(e.target))e.target.select();
+  });
+  fields.addEventListener('click',e=>{
+    if(singleBit(e.target))e.target.select();
+  });
+  // Mobilní klávesnice nemusí posílat keydown, ale zpravidla posílá beforeinput.
+  // Zachováme také běžnou navigaci, mazání a možnost vybrat jinou buňku.
+  fields.addEventListener('beforeinput',e=>{
+    if(!singleBit(e.target)||e.isComposing||!e.cancelable||!['insertText','insertReplacementText'].includes(e.inputType)||!/[01]/.test(e.data||'')||e.data.length!==1)return;
+    e.preventDefault();
+    replaceBit(e.target,e.data);
+  });
+  fields.addEventListener('input',e=>{
+    const target=e.target;
+    if(!target.matches('input[data-key]'))return;
+    const key=target.dataset.key,signed=key==='signedResult';
+    const width=C.workWidth(S.task);
+    const max=signed?width+1:key.startsWith('bit')||key.startsWith('carry')?1:width;
+    const pos=target.selectionStart;
+    let cleaned=target.value.replace(signed?/[^01−-]/g:/[^01]/g,'').replace(/-/g,'−').slice(0,max);
+    if(signed&&cleaned.includes('−'))cleaned='−'+cleaned.replace(/−/g,'').slice(0,width);
+    target.value=cleaned;
+    target.removeAttribute('aria-invalid');target.classList.remove('bad');
+    preserveInput(key,cleaned);
+    if(cleaned.length===1&&/^(bit|carry)\d+$/.test(key)&&!e.inputType?.startsWith('delete')){
+      moveSumFocus(key);
+    }
+  });
+  byId('stepFields').addEventListener('change',e=>{
+    if(e.target.matches('input[name="carryDecision"]')) preserveInput('carryDecision',e.target.value);
+  });
+  byId('checkStep').addEventListener('keydown',e=>{
+    if(e.key==='Tab'&&e.shiftKey&&currentStage()==='sum'){
+      e.preventDefault();
+      focusSumField(byId('stepFields').querySelector(`[data-key="carry${C.workWidth(S.task)-1}"]`));
+    }
+  });
+  byId('stepFields').addEventListener('keydown',e=>{
+    if(!e.target.matches('input'))return;
+    const key=e.target.dataset.key;
+    if(singleBit(e.target)&&!e.isComposing&&/^[01]$/.test(e.key)&&!e.ctrlKey&&!e.altKey&&!e.metaKey){
+      e.preventDefault();
+      replaceBit(e.target,e.key);
+      return;
+    }
+    if(e.key==='Tab' && /^(bit|carry)\d+$/.test(key) && moveSumFocus(key,e.shiftKey)){
+      e.preventDefault();
+      return;
+    }
+    if(e.key==='Enter'){e.preventDefault();checkStage();}
+  });
+}
+function createWorksheet(){
+  const count=Number(byId('worksheetCount').value);
+  if(![5,10,15,20].includes(count))return;
+  const items=[];
+  let seq=S.subCycle;
+  for(let i=0;i<count;i++){
+    const t=C.generateWorksheet({difficulty:S.difficulty,mode:S.mode,subCycle:seq,ordinal:i,includeTrivial:S.worksheetTrivial});
+    if(t.op==='sub')seq++;
+    items.push(t);
+  }
+  S.worksheet={items,mode:S.mode,difficulty:S.difficulty,includeTrivial:S.worksheetTrivial,createdAt:Date.now()};
+  save();renderWorksheet();byId('worksheetPreview').open=true;
+  toast('Cvičení pro žáky a odpovídající klíč jsou připravené.');
+}
+// Tisková sestava je vždy stejná pro žáky i učitele; neodhaluje řešení v zadání.
+// Jednotlivé strany mají explicitně tři úlohy kvůli prostoru na převody i přenosy.
+const PAPER_ITEMS_PER_PAGE=3;
+function paperElement(tag,className,text){
+  const node=document.createElement(tag);
+  if(className)node.className=className;
+  if(text!==undefined)node.textContent=text;
+  return node;
+}
+function printRow(parent,description,value){
+  const row=paperElement('div','paper-row');
+  row.append(paperElement('span','paper-label',description));
+  if(value===null)row.append(paperElement('span','paper-fill',' '));
+  else row.append(paperElement('code','paper-answer',value));
+  parent.append(row);
+}
+// V tisku se nepředtiskují jednotlivé přenosy C₁…Cₙ. Jediný sledovaný
+// přenos je Cₙ (mimo pevnou šířku). Běžné sloupce si žák počítá sám.
+function paperCarryLast(n,value){return `C${n} = ${value}`;}
+function paperVerticalWorkspace(t,student,s){
+  const wrap=paperElement('div','paper-workspace');
+  if(student){
+    const block=paperElement('div','paper-vertical');
+    for(const [label,klass] of [
+      ['A₂','paper-calc-row'],[t.op==='add'?'+ B₂':'+ (−B)₂','paper-calc-row'],['','paper-calc-row paper-calc-answer']]){
+      const row=paperElement('div',klass);
+      row.append(paperElement('span','paper-calc-symbol',label),paperElement('span','paper-calc-write',''));
+      block.append(row);
+    }
+    wrap.append(block,paperElement('div','paper-free-space',''));
+  }else{
+    const block=paperElement('pre','paper-code');
+    const operand=t.op==='add'?s.paddedB:s.twosB;
+    // Všechny řádky jsou zarovnány doprava na slovo se znaménkem operace.
+    const result=s.fullAddition;
+    block.textContent=`  ${s.paddedA}\n+ ${operand}\n${'─'.repeat(s.width+2)}\n${result.padStart(s.width+2,' ')}`;
+    wrap.append(block);
+  }
+  return wrap;
+}
+function studentPaperEntry(t,number){
+  const entry=paperElement('article','sheet-entry student-entry');
+  const s=C.solve(t);
+  entry.append(paperElement('h3','prompt',`${number}.  ${t.a} ${t.op==='add'?'+':'−'} ${t.b}     (nejvýše ${bitCount(t.n)})`));
+  const conversions=paperElement('div','paper-columns');
+  printRow(conversions,`A = ${t.a}₁₀ → A₂ =`,null);
+  printRow(conversions,`B = ${t.b}₁₀ → B₂ =`,null);
+  entry.append(conversions);
+  if(t.op==='sub'){
+    const supplements=paperElement('div','paper-columns');
+    printRow(supplements,'Negace B (~B) =',null);
+    printRow(supplements,'Dvojkový doplněk (−B) =',null);
+    entry.append(supplements);
+  }
+  const working=paperElement('div','paper-working');
+  working.append(paperElement('span','paper-section-label','Písemný výpočet (operandy piš pod sebe)'));
+  working.append(paperVerticalWorkspace(t,true));
+  entry.append(working);
+  const carry=paperElement('div','paper-carry-question');
+  carry.textContent=`Jediný zapisovaný přenos: C${s.width} (mimo ${bitCount(s.width)}) =  □ 0   □ 1`;
+  entry.append(carry);
+  if(t.op==='sub'){
+    const negatives=paperElement('div','paper-columns paper-negative-fields');
+    printRow(negatives,'Je-li záporný: ~součet =',null);
+    printRow(negatives,'Po přičtení 1 =',null);
+    entry.append(negatives);
+  }
+  const results=paperElement('div','paper-columns paper-results');
+  printRow(results,'Čitelný výsledek₂ =',null);
+  printRow(results,'Zpětný převod₁₀ =',null);
+  entry.append(results);
+  return entry;
+}
+function teacherPaperEntry(t,number){
+  const s=C.solve(t),entry=paperElement('article','sheet-entry teacher-entry');
+  entry.append(paperElement('h3','prompt',`${number}.  ${t.a} ${t.op==='add'?'+':'−'} ${t.b}     (nejvýše ${bitCount(t.n)})`));
+  const conversions=paperElement('div','paper-columns');
+  printRow(conversions,`${t.a}₁₀ =`,`${s.paddedA}₂`);
+  printRow(conversions,`${t.b}₁₀ =`,`${s.paddedB}₂`);
+  entry.append(conversions);
+  if(t.op==='sub'){
+    const supplements=paperElement('div','paper-columns');
+    printRow(supplements,'~B =',s.negatedB);
+    printRow(supplements,'~B + 1 = −B =',s.twosB);
+    entry.append(supplements);
+  }
+  const block=paperElement('div','teacher-working');
+  block.append(paperVerticalWorkspace(t,false,s));
+  const explanation=paperElement('div','teacher-explain');
+  explanation.append(paperElement('div','',paperCarryLast(s.width,s.trace.carry)));
+  if(t.op==='sub'){
+    explanation.append(paperElement('div','',s.trace.carry?'Přenos zahodíme; rozdíl je nezáporný.':'Bez přenosu; součet je záporný mezivýsledek.'));
+    if(s.negative) explanation.append(paperElement('div','',`${s.intermediate} → ~ = ${s.invertedIntermediate} → +1 = ${s.magnitudeBits}`));
+    else explanation.append(paperElement('div','',`Zbylých ${bitCount(s.width)}: ${s.intermediate}.`));
+  }else explanation.append(paperElement('div','',s.trace.carry?'Krajní přenos tvoří další bit výsledku.':'Krajní přenos nevznikl.'));
+  block.append(explanation);entry.append(block);
+  const final=paperElement('div','print-answer');
+  final.append(paperElement('strong','', 'Výsledek: '));
+  final.append(paperElement('span','print-double-result',s.finalBinary+'₂'));
+  final.append(paperElement('strong','',` = ${decimalSign(s.decimal)}₁₀`));
+  entry.append(final);
+  return entry;
+}
+function printable(kind){
+  if(!S.worksheet)createWorksheet();
+  const d=S.worksheet,teacher=kind==='key';
+  const root=byId('print-root');root.replaceChildren();root.setAttribute('aria-hidden','false');
+  for(let offset=0;offset<d.items.length;offset+=PAPER_ITEMS_PER_PAGE){
+    const section=paperElement('section','print-page '+(teacher?'teacher':'student'));
+    const header=paperElement('header','sheet-head');
+    const title=paperElement('div','sheet-head-title');
+    title.append(paperElement('h2','',teacher?'Dvojková aritmetika – řešení pro učitele':'Dvojková aritmetika – cvičení pro žáky'));
+    title.append(paperElement('p','',`${C.names[d.difficulty]} · ${d.mode==='mixed'?'Smíšené příklady':d.mode==='sub'?'Odčítání':'Sčítání'} · zadání v desítkové soustavě`));
+    header.append(title,paperElement('p','sheet-identification',teacher?'Klíč k totožné sadě':'Jméno: __________________  Třída: ______  Datum: __________'));
+    section.append(header);
+    if(!teacher)section.append(paperElement('p','sheet-directions','Cvičení (nikoli test): převeď čísla do dvojkové soustavy; zvolený počet bitů je horní mez. Kratší operand zarovnej jen na délku delšího. Vypočítej součet pod sebou, krajní přenos Cₙ a výsledek převeď zpět do desítkové soustavy.'));
+    const body=paperElement('div','sheet-entries');
+    d.items.slice(offset,offset+PAPER_ITEMS_PER_PAGE).forEach((t,j)=>body.append(teacher?teacherPaperEntry(t,offset+j+1):studentPaperEntry(t,offset+j+1)));
+    section.append(body);
+    const footer=paperElement('footer','sheet-footer');
+    footer.textContent=`Dvojková aritmetika – procvičování · ${teacher?'ŘEŠENÍ PRO UČITELE':'CVIČENÍ PRO ŽÁKY'} · ${Math.floor(offset/PAPER_ITEMS_PER_PAGE)+1}/${Math.ceil(d.items.length/PAPER_ITEMS_PER_PAGE)} · úlohy ${offset+1}–${Math.min(offset+PAPER_ITEMS_PER_PAGE,d.items.length)}`;
+    section.append(footer);root.append(section);
+  }
+  return root;
+}
+function printSheet(kind){
+  printable(kind);
+  byId('worksheetStatus').textContent=`Připraven tisk: ${kind==='key'?'samostatné řešení pro učitele':'cvičení pro žáky'}. Používá se stále stejná sada.`;
+  window.print();
+}
+function bind(){
+  byId('modeSwitch').addEventListener('click',e=>{const mode=e.target.closest('button[data-mode]')?.dataset.mode;if(!mode)return;S.mode=mode;nextTask();});
+  byId('difficulty').addEventListener('change',e=>{S.difficulty=e.target.value;nextTask();});
+  byId('newTask').addEventListener('click',()=>nextTask());
+  byId('checkStep').addEventListener('click',checkStage);
+  byId('hintButton').addEventListener('click',hintPressed);
+  byId('showProcedure').addEventListener('click',()=>addHintLevel(3));
+  byId('nextAfterFinish').addEventListener('click',()=>nextTask());
+  byId('retryThisTask').addEventListener('click',()=>setTask(S.task,'repeat'));
+  byId('loadExampleNegative').addEventListener('click',()=>{S.mode='sub';S.difficulty='medium';setTask({n:5,a:13,b:16,op:'sub'},'example');});
+  byId('loadExamplePositive').addEventListener('click',()=>{S.mode='sub';S.difficulty='medium';setTask({n:5,a:13,b:9,op:'sub'},'example');});
+  byId('closeReview').addEventListener('click',()=>{S.reviewVisible=false;save();renderReview();});
+  byId('retryWrong').addEventListener('click',()=>{
+    const wrong=S.history.filter(r=>!r.correct);
+    if(!wrong.length)return;
+    const chosen=wrong[S.retryCursor%wrong.length];S.retryCursor++;
+    setTask({n:chosen.n,a:chosen.a,b:chosen.b,op:chosen.op},'repeat');
+  });
+  byId('weakPractice').addEventListener('click',()=>nextTask(pickWeak()));
+  byId('worksheetTrivial').addEventListener('change',e=>{S.worksheetTrivial=e.target.checked;save();});
+  byId('generateWorksheet').addEventListener('click',createWorksheet);
+  byId('printWorksheet').addEventListener('click',()=>printSheet('student'));
+  byId('printSolutions').addEventListener('click',()=>printSheet('key'));
+  window.addEventListener('afterprint',()=>{byId('print-root').setAttribute('aria-hidden','true');});
+  window.addEventListener('pagehide',save);
+  bindInputs();
+}
+function init(){initializeTheme();hydrate();bind();if(!S.task)nextTask();else render();}
+init();
+})();
+
+</script>
+</body>
+</html>
